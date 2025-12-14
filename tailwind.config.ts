@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Space Grotesk', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
       },
       colors: {
@@ -58,6 +58,12 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        motion: {
+          purple: "hsl(var(--motion-purple))",
+          blue: "hsl(var(--motion-blue))",
+          indigo: "hsl(var(--motion-indigo))",
+          pink: "hsl(var(--motion-pink))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
