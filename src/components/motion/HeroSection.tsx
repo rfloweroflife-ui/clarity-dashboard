@@ -29,7 +29,7 @@ export function HeroSection() {
         {/* CTA */}
         <div className="fade-in-up" style={{ animationDelay: '0.3s' }}>
           <Button className="cta-button text-lg px-8 py-6 h-auto">
-            Try Motion for free
+            Try Aura Lift for free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
             Start your free trial. Cancel in 1 click.

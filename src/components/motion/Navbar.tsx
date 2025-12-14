@@ -15,9 +15,9 @@ export function Navbar() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">M</span>
+              <span className="text-primary-foreground font-bold text-lg">A</span>
             </div>
-            <span className="font-display font-bold text-xl text-foreground">motion</span>
+            <span className="font-display font-bold text-xl text-foreground">Aura Lift</span>
           </div>
 
           {/* Navigation Links */}
@@ -72,7 +72,7 @@ export function Navbar() {
 
           {/* CTA Button */}
           <Button className="cta-button hidden md:inline-flex">
-            Try Motion for free
+            Try Aura Lift for free
           </Button>
 
           {/* Mobile menu button */}

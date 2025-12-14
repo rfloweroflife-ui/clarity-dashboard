@@ -59,11 +59,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        motion: {
-          purple: "hsl(var(--motion-purple))",
-          blue: "hsl(var(--motion-blue))",
-          indigo: "hsl(var(--motion-indigo))",
-          pink: "hsl(var(--motion-pink))",
+        brand: {
+          purple: "hsl(var(--brand-purple))",
+          blue: "hsl(var(--brand-blue))",
+          indigo: "hsl(var(--brand-indigo))",
+          pink: "hsl(var(--brand-pink))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

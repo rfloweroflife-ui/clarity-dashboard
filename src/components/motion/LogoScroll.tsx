@@ -14,7 +14,7 @@ export function LogoScroll() {
     <section className="py-12 border-y border-border bg-muted/30 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4">
         <p className="text-center text-sm text-muted-foreground mb-8">
-          Over 1 million top performers and teams trust Motion
+          Over 1 million top performers and teams trust Aura Lift Essentials
         </p>
         
         <div className="relative">

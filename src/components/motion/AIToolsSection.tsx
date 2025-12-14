@@ -14,9 +14,9 @@ const tools = [
 ];
 
 const phases = [
-  { name: "Strategy", color: "bg-motion-pink/20 text-motion-pink" },
+  { name: "Strategy", color: "bg-brand-pink/20 text-brand-pink" },
   { name: "Design", color: "bg-success/20 text-success" },
-  { name: "Development", color: "bg-motion-blue/20 text-motion-blue" },
+  { name: "Development", color: "bg-brand-blue/20 text-brand-blue" },
 ];
 
 const tasks = {

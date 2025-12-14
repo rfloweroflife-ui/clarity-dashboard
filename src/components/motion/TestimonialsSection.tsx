@@ -1,21 +1,21 @@
 const testimonials = [
   {
-    quote: "Motion saved me from under-performing at my job, I feel so much less stressed and finally have a healthy work-life balance",
+    quote: "Aura Lift saved me from under-performing at my job, I feel so much less stressed and finally have a healthy work-life balance",
     author: "Matt J",
     role: "Business Analyst",
   },
   {
-    quote: "Motion helped me get promoted 12 months faster than peers",
+    quote: "Aura Lift helped me get promoted 12 months faster than peers",
     author: "Jason H",
     role: "Marketing Manager",
   },
   {
-    quote: "Motion helped make our business an extra $700k/year because we were able to complete client projects faster",
+    quote: "Aura Lift helped make our business an extra $700k/year because we were able to complete client projects faster",
     author: "Evan H",
     role: "Business Owner",
   },
   {
-    quote: "Motion saved us what's equivalent to $250k a year of time previously wasted in emails and meetings",
+    quote: "Aura Lift saved us what's equivalent to $250k a year of time previously wasted in emails and meetings",
     author: "Sean H",
     role: "COO",
   },
@@ -26,7 +26,7 @@ export function TestimonialsSection() {
     <section className="py-20 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
-          Motion is built for individuals and teams of all sizes
+          Aura Lift Essentials is built for individuals and teams of all sizes
         </h2>
         <p className="text-center text-muted-foreground mb-12">
           Whether you are an individual, a 20-person team, or a 1000-person business
