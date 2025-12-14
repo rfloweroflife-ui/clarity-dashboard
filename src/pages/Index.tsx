@@ -3,21 +3,23 @@ import { HeroMetric } from "@/components/dashboard/HeroMetric";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { AttentionItem } from "@/components/dashboard/AttentionItem";
 import { SparkIndicator } from "@/components/dashboard/SparkIndicator";
+import { JournalWidget } from "@/components/dashboard/JournalWidget";
+import { ScheduleCalendar } from "@/components/dashboard/ScheduleCalendar";
 
 const Index = () => {
   return (
-    <div className="h-full bg-background p-6 md:p-8 lg:p-10 flex flex-col">
+    <div className="h-full bg-background p-4 md:p-6 lg:p-8 flex flex-col">
       {/* Header */}
       <div className="fade-in">
         <DashboardHeader />
       </div>
 
-      {/* Main Grid */}
-      <div className="flex-1 grid grid-cols-12 gap-6 mt-8 min-h-0">
-        {/* Left Column - Hero Metric */}
-        <div className="col-span-12 lg:col-span-5 flex flex-col gap-6">
+      {/* Main Grid - 3 Column Layout */}
+      <div className="flex-1 grid grid-cols-12 gap-4 mt-6 min-h-0">
+        {/* Left Column - Hero + Attention */}
+        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
           {/* Hero Revenue */}
-          <div className="glass-card flex-1 flex items-center justify-center p-8 fade-in-delay-1 glow-primary">
+          <div className="glass-card flex-1 flex items-center justify-center p-6 fade-in-delay-1 glow-primary">
             <HeroMetric
               label="Today's Revenue"
               value="$847K"
@@ -27,19 +29,19 @@ const Index = () => {
           </div>
 
           {/* Attention Required */}
-          <div className="fade-in-delay-3">
-            <h2 className="metric-label mb-3">Requires Decision</h2>
+          <div className="fade-in-delay-2">
+            <h2 className="metric-label mb-2">Requires Decision</h2>
             <AttentionItem
               type="opportunity"
               title="TikTok campaign overperforming"
               metric="+340%"
-              description="Scale budget? Current ROAS: 4.2x"
+              description="Scale budget?"
             />
           </div>
         </div>
 
-        {/* Right Column - Metrics Grid */}
-        <div className="col-span-12 lg:col-span-7 grid grid-cols-2 gap-6 content-start">
+        {/* Center Column - Metrics Grid */}
+        <div className="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4 content-start">
           {/* Row 1 */}
           <MetricCard
             label="Gross Margin"
@@ -74,9 +76,9 @@ const Index = () => {
           />
 
           {/* Health Indicators */}
-          <div className="col-span-2 glass-card p-5 fade-in-delay-3">
-            <h2 className="metric-label mb-4">System Health</h2>
-            <div className="space-y-3">
+          <div className="col-span-2 glass-card p-4 fade-in-delay-3">
+            <h2 className="metric-label mb-3">System Health</h2>
+            <div className="space-y-2">
               <SparkIndicator
                 label="Inventory levels"
                 value="42 days"
@@ -95,10 +97,23 @@ const Index = () => {
             </div>
           </div>
         </div>
+
+        {/* Right Column - Calendar & Journal */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+          {/* Schedule Calendar */}
+          <div className="flex-1 fade-in-delay-2">
+            <ScheduleCalendar />
+          </div>
+
+          {/* Journal */}
+          <div className="fade-in-delay-3">
+            <JournalWidget />
+          </div>
+        </div>
       </div>
 
-      {/* Footer - Minimal */}
-      <div className="mt-6 text-center fade-in-delay-3">
+      {/* Footer */}
+      <div className="mt-4 text-center fade-in-delay-3">
         <span className="text-muted-foreground/50 text-xs uppercase tracking-widest">
           Data refreshes every 5 minutes
         </span>
