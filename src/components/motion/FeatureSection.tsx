@@ -58,7 +58,7 @@ export function FeatureSection({ title, features }: FeatureSectionProps) {
           {/* Feature preview */}
           <div className="bg-muted rounded-2xl border border-border p-8 flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-motion-pink/20 rounded-xl mb-4 flex items-center justify-center">
+              <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-brand-pink/20 rounded-xl mb-4 flex items-center justify-center">
                 <span className="text-muted-foreground">Feature Preview</span>
               </div>
               <h4 className="font-display font-semibold text-foreground">
@@ -70,7 +70,7 @@ export function FeatureSection({ title, features }: FeatureSectionProps) {
 
         <div className="text-center mt-12">
           <Button className="cta-button">
-            Try Motion for free
+            Try Aura Lift for free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
             Start your free trial. Cancel in 1 click.

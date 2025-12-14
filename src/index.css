@@ -42,13 +42,13 @@
 
     --radius: 0.75rem;
 
-    /* Motion-specific colors */
-    --motion-purple: 252 100% 67%;
-    --motion-blue: 217 91% 60%;
-    --motion-indigo: 234 89% 74%;
-    --motion-pink: 330 81% 60%;
-    --motion-gradient-start: 240 100% 98%;
-    --motion-gradient-end: 252 100% 98%;
+    /* Brand-specific colors */
+    --brand-purple: 252 100% 67%;
+    --brand-blue: 217 91% 60%;
+    --brand-indigo: 234 89% 74%;
+    --brand-pink: 330 81% 60%;
+    --brand-gradient-start: 240 100% 98%;
+    --brand-gradient-end: 252 100% 98%;
 
     --font-display: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -108,11 +108,11 @@
 @layer components {
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--motion-purple)), hsl(var(--motion-pink)));
+    background-image: linear-gradient(135deg, hsl(var(--brand-purple)), hsl(var(--brand-pink)));
   }
 
   .gradient-bg {
-    background: linear-gradient(180deg, hsl(var(--motion-gradient-start)) 0%, hsl(var(--motion-gradient-end)) 50%, hsl(var(--background)) 100%);
+    background: linear-gradient(180deg, hsl(var(--brand-gradient-start)) 0%, hsl(var(--brand-gradient-end)) 50%, hsl(var(--background)) 100%);
   }
 
   .card-hover {

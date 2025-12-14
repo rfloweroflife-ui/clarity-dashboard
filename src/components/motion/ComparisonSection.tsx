@@ -58,7 +58,7 @@ export function ComparisonSection() {
           <div>
             <h3 className="font-display text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Motion's AI
+              Aura Lift's AI
             </h3>
             <div className="space-y-3">
               {aiTools.map((tool, index) => {
@@ -79,7 +79,7 @@ export function ComparisonSection() {
 
         <div className="text-center mt-12">
           <Button className="cta-button text-lg px-8 py-6 h-auto">
-            Try Motion for free
+            Try Aura Lift for free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
             Start your free trial. Cancel in 1 click.
