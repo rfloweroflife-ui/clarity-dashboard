@@ -14,11 +14,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { TaskTimer } from './TaskTimer';
+import { AssigneeSelect } from './AssigneeSelect';
+import { WorkspaceMember } from '@/hooks/useWorkspaceMembers';
 
 interface SortableTaskCardProps {
   task: Task;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onAssign?: (taskId: string, userId: string | null) => void;
   onClick?: () => void;
   showDragHandle?: boolean;
   badges?: React.ReactNode;
@@ -29,6 +32,7 @@ interface SortableTaskCardProps {
     onStart: () => void;
     onStop: () => void;
   };
+  members?: WorkspaceMember[];
 }
 
 const priorityColors = {
@@ -42,10 +46,12 @@ export const SortableTaskCard = ({
   task,
   onComplete,
   onDelete,
+  onAssign,
   onClick,
   showDragHandle = true,
   badges,
   timerProps,
+  members = [],
 }: SortableTaskCardProps) => {
   const {
     attributes,
@@ -100,8 +106,16 @@ export const SortableTaskCard = ({
           >
             {task.title}
           </h3>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {badges}
+            {members.length > 0 && onAssign && (
+              <AssigneeSelect
+                members={members}
+                assigneeId={task.assignee_id}
+                onAssign={(userId) => onAssign(task.id, userId)}
+                compact
+              />
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button
@@ -112,7 +126,7 @@ export const SortableTaskCard = ({
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-popover border border-border">
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();

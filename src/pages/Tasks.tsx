@@ -18,6 +18,7 @@ import { AppLayout } from '@/components/app/AppLayout';
 import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
+import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
 import { SortableTaskCard } from '@/components/app/SortableTaskCard';
 import { TaskCard } from '@/components/app/TaskCard';
 import { CreateTaskDialog } from '@/components/app/CreateTaskDialog';
@@ -29,12 +30,20 @@ import { useAIPrioritization } from '@/hooks/useAIPrioritization';
 
 const Tasks = () => {
   const { currentWorkspace } = useWorkspace();
-  const { tasks, createTask, completeTask, deleteTask, reorderTasks } = useTasks(
+  const { tasks, createTask, updateTask, completeTask, deleteTask, reorderTasks } = useTasks(
     currentWorkspace?.id || null
   );
   const { prioritizeTasks, isLoading, result, clearResult } = useAIPrioritization();
   const { activeEntry, startTimer, stopTimer, getTaskTotalTime, getActiveTaskId } = useTimeTracking(
     currentWorkspace?.id || null
+  );
+  const { members } = useWorkspaceMembers(currentWorkspace?.id || null);
+
+  const handleAssign = useCallback(
+    (taskId: string, userId: string | null) => {
+      updateTask(taskId, { assignee_id: userId });
+    },
+    [updateTask]
   );
 
   const todoTasks = useMemo(
@@ -189,6 +198,8 @@ const Tasks = () => {
                         task={task}
                         onComplete={completeTask}
                         onDelete={deleteTask}
+                        onAssign={handleAssign}
+                        members={members}
                         badges={
                           <>
                             {isQuickWin(task.id) && (
