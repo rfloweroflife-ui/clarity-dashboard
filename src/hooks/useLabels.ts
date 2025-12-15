@@ -59,6 +59,35 @@ export const useLabels = (workspaceId: string | null) => {
     if (user && workspaceId) {
       fetchLabels();
       fetchTaskLabels();
+
+      // Subscribe to realtime task_labels changes
+      const channel = supabase
+        .channel(`task-labels-${workspaceId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'task_labels',
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              const newTaskLabel = payload.new as TaskLabel;
+              setTaskLabels((prev) => {
+                if (prev.some((tl) => tl.id === newTaskLabel.id)) return prev;
+                return [...prev, newTaskLabel];
+              });
+            } else if (payload.eventType === 'DELETE') {
+              const deleted = payload.old as { id: string };
+              setTaskLabels((prev) => prev.filter((tl) => tl.id !== deleted.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user, workspaceId, fetchLabels, fetchTaskLabels]);
 

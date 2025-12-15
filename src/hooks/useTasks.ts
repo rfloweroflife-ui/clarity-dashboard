@@ -30,6 +30,41 @@ export const useTasks = (workspaceId: string | null) => {
   useEffect(() => {
     if (user && workspaceId) {
       fetchTasks();
+
+      // Subscribe to realtime changes
+      const channel = supabase
+        .channel(`tasks-${workspaceId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'tasks',
+            filter: `workspace_id=eq.${workspaceId}`,
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              const newTask = payload.new as Task;
+              setTasks((prev) => {
+                if (prev.some((t) => t.id === newTask.id)) return prev;
+                return [...prev, newTask];
+              });
+            } else if (payload.eventType === 'UPDATE') {
+              const updated = payload.new as Task;
+              setTasks((prev) =>
+                prev.map((t) => (t.id === updated.id ? updated : t))
+              );
+            } else if (payload.eventType === 'DELETE') {
+              const deleted = payload.old as { id: string };
+              setTasks((prev) => prev.filter((t) => t.id !== deleted.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user, workspaceId]);
 
