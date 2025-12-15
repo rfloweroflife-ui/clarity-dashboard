@@ -11,6 +11,7 @@ import {
   Calendar,
   Video,
   BookOpen,
+  BarChart3,
   Settings,
   LogOut,
   Sparkles,
@@ -25,6 +26,7 @@ const navItems = [
   { icon: Calendar, label: 'Calendar', path: '/calendar' },
   { icon: Video, label: 'Meetings', path: '/meetings' },
   { icon: BookOpen, label: 'Journal', path: '/journal' },
+  { icon: BarChart3, label: 'Reports', path: '/reports' },
 ];
 
 export const Sidebar = () => {
