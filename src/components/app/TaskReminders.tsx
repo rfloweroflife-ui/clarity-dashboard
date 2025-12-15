@@ -1,11 +1,11 @@
 import { Task } from '@/hooks/useTasks';
 import { useTaskNotifications } from '@/hooks/useTaskNotifications';
+import { useEmailDigest } from '@/hooks/useEmailDigest';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Bell, BellOff, AlertTriangle, Calendar, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Bell, BellOff, AlertTriangle, Calendar, Clock, Mail, Loader2 } from 'lucide-react';
 
 interface TaskRemindersProps {
   tasks: Task[];
@@ -19,6 +19,7 @@ export const TaskReminders = ({ tasks }: TaskRemindersProps) => {
     requestPermission,
     hasPermission 
   } = useTaskNotifications(tasks);
+  const { sendDigestNow, isSending } = useEmailDigest();
 
   const overdue = getOverdueTasks();
   const dueToday = getTasksDueToday();
@@ -53,12 +54,28 @@ export const TaskReminders = ({ tasks }: TaskRemindersProps) => {
             <Bell className="h-4 w-4" />
             Task Reminders
           </CardTitle>
-          {!hasPermission && (
-            <Button variant="ghost" size="sm" onClick={requestPermission} className="gap-1 text-xs">
-              <BellOff className="h-3 w-3" />
-              Enable Notifications
+          <div className="flex items-center gap-1">
+            {!hasPermission && (
+              <Button variant="ghost" size="sm" onClick={requestPermission} className="gap-1 text-xs">
+                <BellOff className="h-3 w-3" />
+                Enable
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={sendDigestNow} 
+              disabled={isSending}
+              className="gap-1 text-xs"
+            >
+              {isSending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Mail className="h-3 w-3" />
+              )}
+              Email Digest
             </Button>
-          )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
