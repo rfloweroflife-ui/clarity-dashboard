@@ -177,12 +177,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     const body: TaskDigestRequest = await req.json();
 
-    // Scheduled cron job call - process all users with matching digest hour
+    // Scheduled cron job call - process all users with matching digest hour in their timezone
     if (body.scheduled) {
-      const currentHour = body.currentHour ?? new Date().getUTCHours();
-      console.log(`Processing scheduled digests for hour ${currentHour}`);
+      const now = new Date();
+      console.log(`Processing scheduled digests at UTC: ${now.toISOString()}`);
 
-      // Get all users with digest enabled at this hour
+      // Get all users with digest enabled
       const { data: preferences, error: prefError } = await supabase
         .from("email_preferences")
         .select("user_id, digest_hour, timezone")
@@ -197,23 +197,29 @@ const handler = async (req: Request): Promise<Response> => {
 
       let sentCount = 0;
       for (const pref of preferences || []) {
-        // Calculate local hour based on timezone offset
-        // For simplicity, we match on UTC hour (users set their digest time in UTC equivalent)
-        if (pref.digest_hour === currentHour) {
-          // Get user email from auth.users via profiles join
-          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(pref.user_id);
+        try {
+          // Calculate current hour in user's timezone
+          const userTimezone = pref.timezone || 'UTC';
+          const userLocalTime = new Date(now.toLocaleString('en-US', { timeZone: userTimezone }));
+          const userCurrentHour = userLocalTime.getHours();
           
-          if (userError || !userData?.user?.email) {
-            console.log(`Could not get email for user ${pref.user_id}`);
-            continue;
-          }
+          console.log(`User ${pref.user_id}: timezone=${userTimezone}, localHour=${userCurrentHour}, digestHour=${pref.digest_hour}`);
+          
+          if (pref.digest_hour === userCurrentHour) {
+            // Get user email from auth.users
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(pref.user_id);
+            
+            if (userError || !userData?.user?.email) {
+              console.log(`Could not get email for user ${pref.user_id}`);
+              continue;
+            }
 
-          try {
             await sendDigestForUser(supabase, pref.user_id, userData.user.email);
             sentCount++;
-          } catch (err) {
-            console.error(`Failed to send digest to user ${pref.user_id}:`, err);
+            console.log(`Sent digest to user ${pref.user_id}`);
           }
+        } catch (err) {
+          console.error(`Failed to send digest to user ${pref.user_id}:`, err);
         }
       }
 
