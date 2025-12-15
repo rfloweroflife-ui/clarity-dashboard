@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -16,13 +16,14 @@ import {
 } from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/app/AppLayout';
 import { useWorkspace } from '@/hooks/useWorkspace';
-import { useTasks } from '@/hooks/useTasks';
+import { useTasks, Task } from '@/hooks/useTasks';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
 import { useLabels } from '@/hooks/useLabels';
 import { SortableTaskCard } from '@/components/app/SortableTaskCard';
 import { TaskCard } from '@/components/app/TaskCard';
 import { CreateTaskDialog } from '@/components/app/CreateTaskDialog';
+import { TaskDetailDialog } from '@/components/app/TaskDetailDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,20 @@ const Tasks = () => {
   const { labels, getLabelsForTask, addLabelToTask, removeLabelFromTask, createLabel } = useLabels(
     currentWorkspace?.id || null
   );
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  const openTaskDetail = (task: Task) => {
+    setSelectedTask(task);
+    setDetailOpen(true);
+  };
+
+  const getAssigneeName = (assigneeId: string | null) => {
+    if (!assigneeId) return undefined;
+    const member = members.find((m) => m.user_id === assigneeId);
+    return member?.profile?.full_name || 'Unknown';
+  };
 
   const handleAssign = useCallback(
     (taskId: string, userId: string | null) => {
@@ -216,6 +231,7 @@ const Tasks = () => {
                         onComplete={completeTask}
                         onDelete={deleteTask}
                         onAssign={handleAssign}
+                        onClick={() => openTaskDetail(task)}
                         members={members}
                         taskLabels={getLabelsForTask(task.id)}
                         allLabels={labels}
@@ -286,6 +302,17 @@ const Tasks = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {currentWorkspace && (
+          <TaskDetailDialog
+            task={selectedTask}
+            open={detailOpen}
+            onOpenChange={setDetailOpen}
+            workspaceId={currentWorkspace.id}
+            taskLabels={selectedTask ? getLabelsForTask(selectedTask.id) : []}
+            assigneeName={getAssigneeName(selectedTask?.assignee_id || null)}
+          />
+        )}
       </div>
     </AppLayout>
   );
