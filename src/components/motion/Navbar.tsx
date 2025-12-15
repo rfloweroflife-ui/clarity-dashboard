@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, X, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,19 @@ const resources = [
 export function Navbar() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial scroll position
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -49,15 +62,32 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+      <nav className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        isScrolled 
+          ? "bg-background/95 backdrop-blur-lg border-b border-border shadow-lg shadow-background/10" 
+          : "bg-background/80 backdrop-blur-lg border-b border-transparent"
+      )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className={cn(
+            "flex items-center justify-between transition-all duration-300",
+            isScrolled ? "h-14" : "h-16"
+          )}>
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">A</span>
+            <Link to="/" className="flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+              <div className={cn(
+                "rounded-lg bg-primary flex items-center justify-center transition-all duration-300",
+                isScrolled ? "w-7 h-7" : "w-8 h-8"
+              )}>
+                <span className={cn(
+                  "text-primary-foreground font-bold transition-all duration-300",
+                  isScrolled ? "text-base" : "text-lg"
+                )}>A</span>
               </div>
-              <span className="font-display font-bold text-xl text-foreground">Aura Lift</span>
+              <span className={cn(
+                "font-display font-bold text-foreground transition-all duration-300",
+                isScrolled ? "text-lg" : "text-xl"
+              )}>Aura Lift</span>
             </Link>
 
             {/* Desktop Navigation Links */}
