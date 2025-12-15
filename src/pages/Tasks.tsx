@@ -1,28 +1,55 @@
+import { useState, useMemo, useCallback } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/app/AppLayout';
 import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTasks } from '@/hooks/useTasks';
+import { SortableTaskCard } from '@/components/app/SortableTaskCard';
 import { TaskCard } from '@/components/app/TaskCard';
 import { CreateTaskDialog } from '@/components/app/CreateTaskDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Sparkles, Zap, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAIPrioritization } from '@/hooks/useAIPrioritization';
-import { useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
 
 const Tasks = () => {
   const { currentWorkspace } = useWorkspace();
-  const { tasks, createTask, completeTask, deleteTask } = useTasks(currentWorkspace?.id || null);
+  const { tasks, createTask, completeTask, deleteTask, reorderTasks } = useTasks(
+    currentWorkspace?.id || null
+  );
   const { prioritizeTasks, isLoading, result, clearResult } = useAIPrioritization();
 
-  const todoTasks = tasks.filter((t) => t.status === 'todo');
-  const inProgressTasks = tasks.filter((t) => t.status === 'in_progress');
-  const completedTasks = tasks.filter((t) => t.status === 'completed');
+  const todoTasks = useMemo(
+    () => tasks.filter((t) => t.status === 'todo').sort((a, b) => a.position - b.position),
+    [tasks]
+  );
+  const inProgressTasks = useMemo(
+    () => tasks.filter((t) => t.status === 'in_progress').sort((a, b) => a.position - b.position),
+    [tasks]
+  );
+  const completedTasks = useMemo(
+    () => tasks.filter((t) => t.status === 'completed'),
+    [tasks]
+  );
 
-  // Sort tasks by AI priority if available
+  // Sort by AI priority if available
   const sortedTodoTasks = useMemo(() => {
     if (!result?.prioritized_ids) return todoTasks;
-    
+
     const priorityMap = new Map(result.prioritized_ids.map((id, index) => [id, index]));
     return [...todoTasks].sort((a, b) => {
       const aIndex = priorityMap.get(a.id) ?? 999;
@@ -31,9 +58,44 @@ const Tasks = () => {
     });
   }, [todoTasks, result]);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (over && active.id !== over.id) {
+        const oldIndex = sortedTodoTasks.findIndex((t) => t.id === active.id);
+        const newIndex = sortedTodoTasks.findIndex((t) => t.id === over.id);
+
+        const newOrder = arrayMove(sortedTodoTasks, oldIndex, newIndex);
+        reorderTasks(newOrder.map((t) => t.id));
+      }
+    },
+    [sortedTodoTasks, reorderTasks]
+  );
+
   const handlePrioritize = async () => {
-    const incompleteTasks = tasks.filter(t => t.status !== 'completed');
-    await prioritizeTasks(incompleteTasks);
+    const incompleteTasks = tasks.filter((t) => t.status !== 'completed');
+    const prioritized = await prioritizeTasks(incompleteTasks);
+    
+    // Apply AI order to tasks
+    if (prioritized?.prioritized_ids) {
+      const todoIds = todoTasks.map(t => t.id);
+      const prioritizedTodoIds = prioritized.prioritized_ids.filter(id => todoIds.includes(id));
+      if (prioritizedTodoIds.length > 0) {
+        reorderTasks(prioritizedTodoIds);
+      }
+    }
   };
 
   const isQuickWin = (taskId: string) => result?.quick_wins?.includes(taskId);
@@ -45,11 +107,13 @@ const Tasks = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground">Tasks</h1>
-            <p className="text-muted-foreground mt-1">Manage your tasks and stay productive</p>
+            <p className="text-muted-foreground mt-1">
+              Drag to reorder • AI prioritization available
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handlePrioritize}
               disabled={isLoading || tasks.length === 0}
               className="gap-2"
@@ -100,60 +164,80 @@ const Tasks = () => {
             <TabsTrigger value="in_progress">In Progress ({inProgressTasks.length})</TabsTrigger>
             <TabsTrigger value="completed">Completed ({completedTasks.length})</TabsTrigger>
           </TabsList>
+
           <TabsContent value="todo" className="mt-6">
-            <div className="grid gap-3">
-              {sortedTodoTasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No tasks to do</p>
-              ) : (
-                sortedTodoTasks.map((task, index) => (
-                  <div key={task.id} className="relative">
-                    {result && (
-                      <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground font-medium">
-                          #{index + 1}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <TaskCard task={task} onComplete={completeTask} onDelete={deleteTask} />
-                      </div>
-                      {isQuickWin(task.id) && (
-                        <Badge variant="secondary" className="shrink-0">
-                          <Zap className="h-3 w-3 mr-1" />
-                          Quick
-                        </Badge>
-                      )}
-                      {isUrgent(task.id) && (
-                        <Badge variant="destructive" className="shrink-0">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          Urgent
-                        </Badge>
-                      )}
-                    </div>
+            {sortedTodoTasks.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No tasks to do</p>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={sortedTodoTasks.map((t) => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="grid gap-3">
+                    {sortedTodoTasks.map((task) => (
+                      <SortableTaskCard
+                        key={task.id}
+                        task={task}
+                        onComplete={completeTask}
+                        onDelete={deleteTask}
+                        badges={
+                          <>
+                            {isQuickWin(task.id) && (
+                              <Badge variant="secondary" className="shrink-0 gap-1">
+                                <Zap className="h-3 w-3" />
+                                Quick
+                              </Badge>
+                            )}
+                            {isUrgent(task.id) && (
+                              <Badge variant="destructive" className="shrink-0 gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                Urgent
+                              </Badge>
+                            )}
+                          </>
+                        }
+                      />
+                    ))}
                   </div>
-                ))
-              )}
-            </div>
+                </SortableContext>
+              </DndContext>
+            )}
           </TabsContent>
+
           <TabsContent value="in_progress" className="mt-6">
             <div className="grid gap-3">
               {inProgressTasks.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">No tasks in progress</p>
               ) : (
                 inProgressTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} onComplete={completeTask} onDelete={deleteTask} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onComplete={completeTask}
+                    onDelete={deleteTask}
+                  />
                 ))
               )}
             </div>
           </TabsContent>
+
           <TabsContent value="completed" className="mt-6">
             <div className="grid gap-3">
               {completedTasks.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">No completed tasks</p>
               ) : (
                 completedTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} onComplete={completeTask} onDelete={deleteTask} />
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onComplete={completeTask}
+                    onDelete={deleteTask}
+                  />
                 ))
               )}
             </div>
