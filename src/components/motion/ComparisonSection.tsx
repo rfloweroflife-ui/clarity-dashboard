@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ListTodo, FolderKanban, FileText, Calendar, Mic, Search, Workflow, User, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -13,19 +14,21 @@ const oldTools = [
 ];
 
 const aiTools = [
-  { icon: ListTodo, label: "AI Task Planner", description: "Automatically creates and prioritizes tasks" },
-  { icon: FolderKanban, label: "AI Project Manager", description: "Generates projects in seconds and manages statuses for you" },
-  { icon: FileText, label: "AI Docs Assistant", description: "Drafts and proofreads in seconds. Organizes itself." },
-  { icon: Calendar, label: "AI Calendar Assistant", description: "Plans your day for you and schedules meetings automatically" },
-  { icon: Mic, label: "AI Meeting Notetaker", description: "Takes perfect notes and follows-up with action items for you" },
-  { icon: Search, label: "AI Search Assistant", description: "Instantly finds anything - docs, notes, project, task, communication" },
-  { icon: Workflow, label: "AI Workflow Builder", description: "Automatically builds workflows based on SOPs" },
-  { icon: User, label: "AI Personal Assistant", description: "Focus on real work, let AI handle repetitive stuff" },
+  { icon: ListTodo, label: "AI Task Planner", description: "Automatically creates and prioritizes tasks", route: "/tasks" },
+  { icon: FolderKanban, label: "AI Project Manager", description: "Generates projects in seconds and manages statuses for you", route: "/projects" },
+  { icon: FileText, label: "AI Docs Assistant", description: "Drafts and proofreads in seconds. Organizes itself.", route: "/journal" },
+  { icon: Calendar, label: "AI Calendar Assistant", description: "Plans your day for you and schedules meetings automatically", route: "/calendar" },
+  { icon: Mic, label: "AI Meeting Notetaker", description: "Takes perfect notes and follows-up with action items for you", route: "/meetings" },
+  { icon: Search, label: "AI Search Assistant", description: "Instantly finds anything - docs, notes, project, task, communication", route: "/dashboard" },
+  { icon: Workflow, label: "AI Workflow Builder", description: "Automatically builds workflows based on SOPs", route: "/dashboard" },
+  { icon: User, label: "AI Personal Assistant", description: "Focus on real work, let AI handle repetitive stuff", route: "/dashboard" },
 ];
 
 export function ComparisonSection() {
+  const navigate = useNavigate();
+
   return (
-    <section className="py-20 px-4 bg-muted/30">
+    <section id="comparison" className="py-20 px-4 bg-muted/30">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-12">
           Stop using tech from the pre-AI era
@@ -42,7 +45,7 @@ export function ComparisonSection() {
               {oldTools.map((tool, index) => {
                 const Icon = tool.icon;
                 return (
-                  <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-background border border-border">
+                  <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-background border border-border opacity-60">
                     <Icon className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-foreground">{tool.label}</h4>
@@ -64,7 +67,11 @@ export function ComparisonSection() {
               {aiTools.map((tool, index) => {
                 const Icon = tool.icon;
                 return (
-                  <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                  <div 
+                    key={index} 
+                    className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/20 cursor-pointer hover:bg-primary/10 hover:scale-[1.01] transition-all"
+                    onClick={() => navigate(tool.route)}
+                  >
                     <Icon className="w-5 h-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-foreground">{tool.label}</h4>
@@ -78,7 +85,10 @@ export function ComparisonSection() {
         </div>
 
         <div className="text-center mt-12">
-          <Button className="cta-button text-lg px-8 py-6 h-auto">
+          <Button 
+            className="cta-button text-lg px-8 py-6 h-auto"
+            onClick={() => navigate('/auth')}
+          >
             Try Aura Lift for free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">

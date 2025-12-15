@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
+  const navigate = useNavigate();
+
   return (
     <section className="pt-32 pb-20 px-4 gradient-bg">
       <div className="max-w-5xl mx-auto text-center">
@@ -28,7 +31,10 @@ export function HeroSection() {
 
         {/* CTA */}
         <div className="fade-in-up" style={{ animationDelay: '0.3s' }}>
-          <Button className="cta-button text-lg px-8 py-6 h-auto">
+          <Button 
+            className="cta-button text-lg px-8 py-6 h-auto"
+            onClick={() => navigate('/auth')}
+          >
             Try Aura Lift for free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">

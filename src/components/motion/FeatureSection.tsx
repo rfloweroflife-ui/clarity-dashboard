@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -15,12 +16,23 @@ interface FeatureSectionProps {
 }
 
 export function FeatureSection({ title, features }: FeatureSectionProps) {
+  const navigate = useNavigate();
   const [activeFeature, setActiveFeature] = useState(features[0].id);
 
   const currentFeature = features.find(f => f.id === activeFeature);
 
+  // Determine the route based on the section title
+  const getRouteForSection = (sectionTitle: string) => {
+    if (sectionTitle.includes("Task")) return "/tasks";
+    if (sectionTitle.includes("Project")) return "/projects";
+    if (sectionTitle.includes("Meeting")) return "/meetings";
+    return "/dashboard";
+  };
+
+  const sectionRoute = getRouteForSection(title);
+
   return (
-    <section className="py-20 px-4 bg-background">
+    <section id="features" className="py-20 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-12">
           {title}
@@ -56,10 +68,13 @@ export function FeatureSection({ title, features }: FeatureSectionProps) {
           </div>
 
           {/* Feature preview */}
-          <div className="bg-muted rounded-2xl border border-border p-8 flex items-center justify-center min-h-[400px]">
+          <div 
+            className="bg-muted rounded-2xl border border-border p-8 flex items-center justify-center min-h-[400px] cursor-pointer hover:border-primary/30 transition-all"
+            onClick={() => navigate(sectionRoute)}
+          >
             <div className="text-center">
               <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-brand-pink/20 rounded-xl mb-4 flex items-center justify-center">
-                <span className="text-muted-foreground">Feature Preview</span>
+                <span className="text-muted-foreground">Click to try {title}</span>
               </div>
               <h4 className="font-display font-semibold text-foreground">
                 {currentFeature?.title}
@@ -69,7 +84,10 @@ export function FeatureSection({ title, features }: FeatureSectionProps) {
         </div>
 
         <div className="text-center mt-12">
-          <Button className="cta-button">
+          <Button 
+            className="cta-button"
+            onClick={() => navigate('/auth')}
+          >
             Try Aura Lift for free
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
