@@ -76,6 +76,53 @@ export const useComments = (workspaceId: string | null, taskId?: string) => {
   useEffect(() => {
     if (user && workspaceId && taskId) {
       fetchComments();
+
+      // Subscribe to realtime changes
+      const channel = supabase
+        .channel(`comments-${taskId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'comments',
+            filter: `task_id=eq.${taskId}`,
+          },
+          async (payload) => {
+            if (payload.eventType === 'INSERT') {
+              const newComment = payload.new as Comment;
+              // Fetch profile for new comment
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', newComment.user_id)
+                .maybeSingle();
+
+              const commentWithProfile: CommentWithProfile = {
+                ...newComment,
+                profile: profile || undefined,
+              };
+
+              setComments((prev) => {
+                if (prev.some((c) => c.id === newComment.id)) return prev;
+                return [...prev, commentWithProfile];
+              });
+            } else if (payload.eventType === 'UPDATE') {
+              const updated = payload.new as Comment;
+              setComments((prev) =>
+                prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
+              );
+            } else if (payload.eventType === 'DELETE') {
+              const deleted = payload.old as { id: string };
+              setComments((prev) => prev.filter((c) => c.id !== deleted.id));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user, workspaceId, taskId, fetchComments]);
 
