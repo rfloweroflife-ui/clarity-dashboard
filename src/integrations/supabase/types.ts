@@ -487,6 +487,57 @@ export type Database = {
           },
         ]
       }
+      time_entries: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          end_time: string | null
+          id: string
+          notes: string | null
+          start_time: string
+          task_id: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          task_id: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          task_id?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

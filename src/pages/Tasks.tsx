@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -17,6 +17,7 @@ import {
 import { AppLayout } from '@/components/app/AppLayout';
 import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTasks } from '@/hooks/useTasks';
+import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { SortableTaskCard } from '@/components/app/SortableTaskCard';
 import { TaskCard } from '@/components/app/TaskCard';
 import { CreateTaskDialog } from '@/components/app/CreateTaskDialog';
@@ -32,6 +33,9 @@ const Tasks = () => {
     currentWorkspace?.id || null
   );
   const { prioritizeTasks, isLoading, result, clearResult } = useAIPrioritization();
+  const { activeEntry, startTimer, stopTimer, getTaskTotalTime, getActiveTaskId } = useTimeTracking(
+    currentWorkspace?.id || null
+  );
 
   const todoTasks = useMemo(
     () => tasks.filter((t) => t.status === 'todo').sort((a, b) => a.position - b.position),
@@ -201,6 +205,13 @@ const Tasks = () => {
                             )}
                           </>
                         }
+                        timerProps={{
+                          isActive: getActiveTaskId() === task.id,
+                          activeStartTime: activeEntry?.start_time,
+                          totalSeconds: getTaskTotalTime(task.id),
+                          onStart: () => startTimer(task.id),
+                          onStop: stopTimer,
+                        }}
                       />
                     ))}
                   </div>
