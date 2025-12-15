@@ -1,4 +1,4 @@
 project_id = "ztalovpstpmaygngklgk"
 
 [functions.ai-prioritize-tasks]
-verify_jwt = false
+verify_jwt = true
