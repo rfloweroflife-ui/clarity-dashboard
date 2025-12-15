@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 const testimonials = [
   {
     quote: "Aura Lift saved me from under-performing at my job, I feel so much less stressed and finally have a healthy work-life balance",
@@ -22,8 +24,10 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const navigate = useNavigate();
+
   return (
-    <section className="py-20 px-4 bg-background">
+    <section id="testimonials" className="py-20 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
           Aura Lift Essentials is built for individuals and teams of all sizes
@@ -34,7 +38,11 @@ export function TestimonialsSection() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {testimonials.map((testimonial, index) => (
-            <div key={index} className="testimonial-card">
+            <div 
+              key={index} 
+              className="testimonial-card cursor-pointer hover:scale-[1.02] transition-transform"
+              onClick={() => navigate('/auth')}
+            >
               <blockquote className="text-foreground font-medium mb-4">
                 "{testimonial.quote}"
               </blockquote>

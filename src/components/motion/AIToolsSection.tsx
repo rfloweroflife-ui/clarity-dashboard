@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { CheckSquare, FolderKanban, FileText, Mic, Calendar, Workflow, Search, Bot, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { CheckSquare, FolderKanban, FileText, Mic, Calendar, Workflow, Search, Bot, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const tools = [
-  { id: "tasks", label: "AI Tasks", icon: CheckSquare },
-  { id: "projects", label: "AI Projects", icon: FolderKanban },
-  { id: "docs", label: "AI Docs", icon: FileText },
-  { id: "notetaker", label: "AI Notetaker", icon: Mic },
-  { id: "calendar", label: "AI Calendar", icon: Calendar },
-  { id: "workflows", label: "AI Workflows", icon: Workflow },
-  { id: "search", label: "AI Search", icon: Search },
-  { id: "assistant", label: "AI Assistant", icon: Bot },
+  { id: "tasks", label: "AI Tasks", icon: CheckSquare, route: "/tasks", description: "Smart task prioritization" },
+  { id: "projects", label: "AI Projects", icon: FolderKanban, route: "/projects", description: "Automated project management" },
+  { id: "docs", label: "AI Docs", icon: FileText, route: "/journal", description: "Intelligent documentation" },
+  { id: "notetaker", label: "AI Notetaker", icon: Mic, route: "/meetings", description: "Meeting transcription & notes" },
+  { id: "calendar", label: "AI Calendar", icon: Calendar, route: "/calendar", description: "Smart scheduling" },
+  { id: "workflows", label: "AI Workflows", icon: Workflow, route: "/dashboard", description: "Automated workflows" },
+  { id: "search", label: "AI Search", icon: Search, route: "/dashboard", description: "Intelligent search" },
+  { id: "assistant", label: "AI Assistant", icon: Bot, route: "/dashboard", description: "Personal AI helper" },
 ];
 
 const phases = [
@@ -35,6 +37,7 @@ const tasks = {
 };
 
 export function AIToolsSection() {
+  const navigate = useNavigate();
   const [selectedTools, setSelectedTools] = useState<string[]>(["tasks", "projects"]);
   const [activePhase, setActivePhase] = useState("Design");
 
@@ -46,8 +49,21 @@ export function AIToolsSection() {
     );
   };
 
+  const handleGetStarted = () => {
+    navigate('/auth');
+  };
+
+  const handleToolClick = (tool: typeof tools[0]) => {
+    // Toggle selection
+    toggleTool(tool.id);
+  };
+
+  const handleToolNavigate = (route: string) => {
+    navigate(route);
+  };
+
   return (
-    <section className="py-20 px-4 bg-background">
+    <section id="ai-tools" className="py-20 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left side - Tool selector */}
@@ -63,24 +79,29 @@ export function AIToolsSection() {
                 return (
                   <button
                     key={tool.id}
-                    onClick={() => toggleTool(tool.id)}
+                    onClick={() => handleToolClick(tool)}
                     className={cn(
-                      "feature-card flex items-center gap-3 text-left",
+                      "feature-card flex items-center gap-3 text-left group relative",
                       isSelected && "active"
                     )}
                   >
                     <Icon className={cn(
-                      "w-5 h-5",
+                      "w-5 h-5 flex-shrink-0",
                       isSelected ? "text-primary" : "text-muted-foreground"
                     )} />
-                    <span className={cn(
-                      "font-medium text-sm",
-                      isSelected ? "text-foreground" : "text-muted-foreground"
-                    )}>
-                      {tool.label}
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className={cn(
+                        "font-medium text-sm block",
+                        isSelected ? "text-foreground" : "text-muted-foreground"
+                      )}>
+                        {tool.label}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate block">
+                        {tool.description}
+                      </span>
+                    </div>
                     <div className={cn(
-                      "w-4 h-4 rounded border ml-auto flex items-center justify-center",
+                      "w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center",
                       isSelected ? "bg-primary border-primary" : "border-border"
                     )}>
                       {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
@@ -89,6 +110,38 @@ export function AIToolsSection() {
                 );
               })}
             </div>
+
+            {/* Get Started Button */}
+            <div className="mt-6 flex gap-3">
+              <Button 
+                onClick={handleGetStarted}
+                className="cta-button flex-1"
+                disabled={selectedTools.length === 0}
+              >
+                Get Started with {selectedTools.length} tool{selectedTools.length !== 1 ? 's' : ''}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            {/* Quick access links */}
+            {selectedTools.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="text-xs text-muted-foreground">Try now:</span>
+                {selectedTools.slice(0, 3).map((toolId) => {
+                  const tool = tools.find(t => t.id === toolId);
+                  if (!tool) return null;
+                  return (
+                    <button
+                      key={tool.id}
+                      onClick={() => handleToolNavigate(tool.route)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      {tool.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right side - Project visualization */}
@@ -119,11 +172,12 @@ export function AIToolsSection() {
                     <div
                       key={task}
                       className={cn(
-                        "flex items-center gap-3 p-4 rounded-xl border",
+                        "flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all hover:scale-[1.02]",
                         activePhase === phase.name
                           ? "bg-card border-border"
                           : "bg-muted/50 border-transparent"
                       )}
+                      onClick={() => navigate('/tasks')}
                     >
                       <div className={cn(
                         "w-5 h-5 rounded-full flex items-center justify-center",
@@ -142,6 +196,15 @@ export function AIToolsSection() {
                 </div>
               ))}
             </div>
+
+            {/* View all projects link */}
+            <button
+              onClick={() => navigate('/projects')}
+              className="mt-6 w-full text-center text-sm text-primary hover:underline flex items-center justify-center gap-1"
+            >
+              View all projects
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>
