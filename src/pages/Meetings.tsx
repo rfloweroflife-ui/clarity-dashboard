@@ -1,21 +1,30 @@
+import { useState } from 'react';
 import { AppLayout } from '@/components/app/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Video, Loader2 } from 'lucide-react';
 import { useWorkspace } from '@/hooks/useWorkspace';
-import { useMeetings } from '@/hooks/useMeetings';
+import { useMeetings, Meeting } from '@/hooks/useMeetings';
 import { MeetingCard } from '@/components/app/MeetingCard';
 import { CreateMeetingDialog } from '@/components/app/CreateMeetingDialog';
+import { MeetingDetailDialog } from '@/components/app/MeetingDetailDialog';
 
 const Meetings = () => {
   const { currentWorkspace, loading: workspaceLoading } = useWorkspace();
-  const { meetings, loading, createMeeting, deleteMeeting } = useMeetings(
+  const { meetings, loading, createMeeting, updateMeeting, deleteMeeting } = useMeetings(
     currentWorkspace?.id ?? null
   );
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const scheduledMeetings = meetings.filter((m) => m.status === 'scheduled');
   const completedMeetings = meetings.filter((m) => m.status === 'completed');
   const inProgressMeetings = meetings.filter((m) => m.status === 'in_progress');
+
+  const handleMeetingClick = (meeting: Meeting) => {
+    setSelectedMeeting(meeting);
+    setDetailOpen(true);
+  };
 
   if (workspaceLoading || loading) {
     return (
@@ -86,6 +95,7 @@ const Meetings = () => {
                     key={meeting.id}
                     meeting={meeting}
                     onDelete={deleteMeeting}
+                    onClick={() => handleMeetingClick(meeting)}
                   />
                 ))}
               </div>
@@ -107,6 +117,7 @@ const Meetings = () => {
                     key={meeting.id}
                     meeting={meeting}
                     onDelete={deleteMeeting}
+                    onClick={() => handleMeetingClick(meeting)}
                   />
                 ))}
               </div>
@@ -128,6 +139,7 @@ const Meetings = () => {
                     key={meeting.id}
                     meeting={meeting}
                     onDelete={deleteMeeting}
+                    onClick={() => handleMeetingClick(meeting)}
                   />
                 ))}
               </div>
@@ -135,6 +147,13 @@ const Meetings = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <MeetingDetailDialog
+        meeting={selectedMeeting}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdateMeeting={updateMeeting}
+      />
     </AppLayout>
   );
 };
