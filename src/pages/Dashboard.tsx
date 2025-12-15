@@ -3,10 +3,13 @@ import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTasks } from '@/hooks/useTasks';
 import { useProjects } from '@/hooks/useProjects';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
+import { useActivityFeed } from '@/hooks/useActivityFeed';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckSquare, FolderKanban, Calendar, TrendingUp } from 'lucide-react';
+import { CheckSquare, FolderKanban, Calendar, TrendingUp, Activity } from 'lucide-react';
 import { TaskCard } from '@/components/app/TaskCard';
+import { TaskReminders } from '@/components/app/TaskReminders';
+import { ActivityFeed } from '@/components/app/ActivityFeed';
 import { format } from 'date-fns';
 
 const Dashboard = () => {
@@ -15,6 +18,7 @@ const Dashboard = () => {
   const { tasks, completeTask, deleteTask } = useTasks(currentWorkspace?.id || null);
   const { projects } = useProjects(currentWorkspace?.id || null);
   const { events } = useCalendarEvents(currentWorkspace?.id || null);
+  const { activities, loading: activitiesLoading } = useActivityFeed(currentWorkspace?.id || null);
 
   const pendingTasks = tasks.filter((t) => t.status !== 'completed');
   const completedTasks = tasks.filter((t) => t.status === 'completed');
@@ -80,28 +84,56 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Recent Tasks */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pendingTasks.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No pending tasks. Great job!</p>
-            ) : (
-              <div className="space-y-3">
-                {pendingTasks.slice(0, 5).map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onComplete={completeTask}
-                    onDelete={deleteTask}
-                  />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Tasks */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Task Reminders */}
+            <TaskReminders tasks={tasks} />
+
+            {/* Recent Tasks */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Tasks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingTasks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No pending tasks. Great job!</p>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingTasks.slice(0, 5).map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onComplete={completeTask}
+                        onDelete={deleteTask}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Activity Feed */}
+          <div className="lg:col-span-1">
+            <Card className="h-fit">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Activity Feed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ActivityFeed 
+                  activities={activities} 
+                  loading={activitiesLoading}
+                  maxHeight="500px"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

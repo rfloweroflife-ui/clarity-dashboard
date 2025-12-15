@@ -24,11 +24,13 @@ import { SortableTaskCard } from '@/components/app/SortableTaskCard';
 import { TaskCard } from '@/components/app/TaskCard';
 import { CreateTaskDialog } from '@/components/app/CreateTaskDialog';
 import { TaskDetailDialog } from '@/components/app/TaskDetailDialog';
+import { TaskKanbanBoard } from '@/components/app/TaskKanbanBoard';
+import { TaskReminders } from '@/components/app/TaskReminders';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LabelBadge } from '@/components/app/LabelBadge';
-import { Sparkles, Zap, AlertTriangle, Loader2, Filter, X } from 'lucide-react';
+import { Sparkles, Zap, AlertTriangle, Loader2, Filter, X, LayoutList, Kanban } from 'lucide-react';
 import { useAIPrioritization } from '@/hooks/useAIPrioritization';
 
 const Tasks = () => {
@@ -48,6 +50,7 @@ const Tasks = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [filterLabelIds, setFilterLabelIds] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   const openTaskDetail = (task: Task) => {
     setSelectedTask(task);
@@ -184,10 +187,31 @@ const Tasks = () => {
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground">Tasks</h1>
             <p className="text-muted-foreground mt-1">
-              Drag to reorder • AI prioritization available
+              {viewMode === 'kanban' ? 'Drag tasks between columns' : 'Drag to reorder • AI prioritization available'}
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* View Mode Toggle */}
+            <div className="flex items-center border rounded-lg p-1">
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="gap-1 px-2"
+              >
+                <LayoutList className="h-4 w-4" />
+                List
+              </Button>
+              <Button
+                variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+                className="gap-1 px-2"
+              >
+                <Kanban className="h-4 w-4" />
+                Board
+              </Button>
+            </div>
             <Button
               variant="outline"
               onClick={handlePrioritize}
@@ -204,6 +228,9 @@ const Tasks = () => {
             <CreateTaskDialog onCreateTask={createTask} />
           </div>
         </div>
+
+        {/* Task Reminders Widget */}
+        <TaskReminders tasks={tasks} />
 
         {/* Label Filters */}
         {labels.length > 0 && (
@@ -270,105 +297,114 @@ const Tasks = () => {
           </div>
         )}
 
-        <Tabs defaultValue="todo" className="w-full">
-          <TabsList>
-            <TabsTrigger value="todo">To Do ({todoTasks.length})</TabsTrigger>
-            <TabsTrigger value="in_progress">In Progress ({inProgressTasks.length})</TabsTrigger>
-            <TabsTrigger value="completed">Completed ({completedTasks.length})</TabsTrigger>
-          </TabsList>
+        {viewMode === 'kanban' ? (
+          <TaskKanbanBoard
+            tasks={filterTasksByLabels(tasks)}
+            onUpdateTask={updateTask}
+            onCompleteTask={completeTask}
+            onDeleteTask={deleteTask}
+          />
+        ) : (
+          <Tabs defaultValue="todo" className="w-full">
+            <TabsList>
+              <TabsTrigger value="todo">To Do ({todoTasks.length})</TabsTrigger>
+              <TabsTrigger value="in_progress">In Progress ({inProgressTasks.length})</TabsTrigger>
+              <TabsTrigger value="completed">Completed ({completedTasks.length})</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="todo" className="mt-6">
-            {sortedTodoTasks.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No tasks to do</p>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={sortedTodoTasks.map((t) => t.id)}
-                  strategy={verticalListSortingStrategy}
+            <TabsContent value="todo" className="mt-6">
+              {sortedTodoTasks.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No tasks to do</p>
+              ) : (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
                 >
-                  <div className="grid gap-3">
-                    {sortedTodoTasks.map((task) => (
-                      <SortableTaskCard
-                        key={task.id}
-                        task={task}
-                        onComplete={completeTask}
-                        onDelete={deleteTask}
-                        onAssign={handleAssign}
-                        onClick={() => openTaskDetail(task)}
-                        members={members}
-                        taskLabels={getLabelsForTask(task.id)}
-                        allLabels={labels}
-                        onToggleLabel={handleToggleLabel}
-                        onCreateLabel={createLabel}
-                        badges={
-                          <>
-                            {isQuickWin(task.id) && (
-                              <Badge variant="secondary" className="shrink-0 gap-1">
-                                <Zap className="h-3 w-3" />
-                                Quick
-                              </Badge>
-                            )}
-                            {isUrgent(task.id) && (
-                              <Badge variant="destructive" className="shrink-0 gap-1">
-                                <AlertTriangle className="h-3 w-3" />
-                                Urgent
-                              </Badge>
-                            )}
-                          </>
-                        }
-                        timerProps={{
-                          isActive: getActiveTaskId() === task.id,
-                          activeStartTime: activeEntry?.start_time,
-                          totalSeconds: getTaskTotalTime(task.id),
-                          onStart: () => startTimer(task.id),
-                          onStop: stopTimer,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            )}
-          </TabsContent>
-
-          <TabsContent value="in_progress" className="mt-6">
-            <div className="grid gap-3">
-              {inProgressTasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No tasks in progress</p>
-              ) : (
-                inProgressTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onComplete={completeTask}
-                    onDelete={deleteTask}
-                  />
-                ))
+                  <SortableContext
+                    items={sortedTodoTasks.map((t) => t.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="grid gap-3">
+                      {sortedTodoTasks.map((task) => (
+                        <SortableTaskCard
+                          key={task.id}
+                          task={task}
+                          onComplete={completeTask}
+                          onDelete={deleteTask}
+                          onAssign={handleAssign}
+                          onClick={() => openTaskDetail(task)}
+                          members={members}
+                          taskLabels={getLabelsForTask(task.id)}
+                          allLabels={labels}
+                          onToggleLabel={handleToggleLabel}
+                          onCreateLabel={createLabel}
+                          badges={
+                            <>
+                              {isQuickWin(task.id) && (
+                                <Badge variant="secondary" className="shrink-0 gap-1">
+                                  <Zap className="h-3 w-3" />
+                                  Quick
+                                </Badge>
+                              )}
+                              {isUrgent(task.id) && (
+                                <Badge variant="destructive" className="shrink-0 gap-1">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Urgent
+                                </Badge>
+                              )}
+                            </>
+                          }
+                          timerProps={{
+                            isActive: getActiveTaskId() === task.id,
+                            activeStartTime: activeEntry?.start_time,
+                            totalSeconds: getTaskTotalTime(task.id),
+                            onStart: () => startTimer(task.id),
+                            onStop: stopTimer,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="completed" className="mt-6">
-            <div className="grid gap-3">
-              {completedTasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No completed tasks</p>
-              ) : (
-                completedTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onComplete={completeTask}
-                    onDelete={deleteTask}
-                  />
-                ))
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="in_progress" className="mt-6">
+              <div className="grid gap-3">
+                {inProgressTasks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No tasks in progress</p>
+                ) : (
+                  inProgressTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onComplete={completeTask}
+                      onDelete={deleteTask}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="completed" className="mt-6">
+              <div className="grid gap-3">
+                {completedTasks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No completed tasks</p>
+                ) : (
+                  completedTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onComplete={completeTask}
+                      onDelete={deleteTask}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
 
         {currentWorkspace && (
           <TaskDetailDialog
