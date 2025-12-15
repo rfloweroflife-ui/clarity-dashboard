@@ -145,6 +145,38 @@ export const useTasks = (workspaceId: string | null) => {
     });
   };
 
+  const reorderTasks = async (taskIds: string[]) => {
+    // Optimistically update local state
+    const reorderedTasks = taskIds.map((id, index) => {
+      const task = tasks.find((t) => t.id === id);
+      return task ? { ...task, position: index } : null;
+    }).filter(Boolean) as Task[];
+
+    const otherTasks = tasks.filter((t) => !taskIds.includes(t.id));
+    setTasks([...reorderedTasks, ...otherTasks]);
+
+    // Update positions in database
+    const updates = taskIds.map((id, index) => 
+      supabase
+        .from('tasks')
+        .update({ position: index })
+        .eq('id', id)
+    );
+
+    try {
+      await Promise.all(updates);
+    } catch (error) {
+      console.error('Error reordering tasks:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save task order',
+        variant: 'destructive',
+      });
+      // Refetch to restore correct order
+      fetchTasks();
+    }
+  };
+
   return {
     tasks,
     loading,
@@ -152,6 +184,7 @@ export const useTasks = (workspaceId: string | null) => {
     updateTask,
     deleteTask,
     completeTask,
+    reorderTasks,
     refetch: fetchTasks,
   };
 };
