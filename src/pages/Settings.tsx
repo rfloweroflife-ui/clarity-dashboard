@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, LogOut, Building2, Save, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { EmailDigestSettings } from '@/components/app/EmailDigestSettings';
 
 interface Profile {
   id: string;
@@ -141,6 +142,8 @@ const Settings = () => {
             </Button>
           </CardContent>
         </Card>
+
+        <EmailDigestSettings />
 
         <Card>
           <CardHeader>
