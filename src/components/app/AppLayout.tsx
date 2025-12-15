@@ -1,8 +1,10 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { Sidebar } from './Sidebar';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -10,6 +12,7 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const { user, loading } = useAuth();
+  const { collapsed } = useSidebar();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +36,12 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <main className="pl-64 min-h-screen transition-all duration-300">
+      <main
+        className={cn(
+          'min-h-screen transition-all duration-300',
+          collapsed ? 'pl-16' : 'pl-64'
+        )}
+      >
         <div className="p-6">{children}</div>
       </main>
     </div>

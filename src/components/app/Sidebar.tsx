@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
@@ -16,7 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useState } from 'react';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -30,7 +30,7 @@ const navItems = [
 export const Sidebar = () => {
   const location = useLocation();
   const { signOut } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
     <aside
@@ -55,7 +55,7 @@ export const Sidebar = () => {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={toggleCollapsed}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
