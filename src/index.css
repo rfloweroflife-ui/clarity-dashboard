@@ -103,6 +103,17 @@
     @apply border-border transition-colors duration-200;
   }
 
+  @keyframes progress {
+    from {
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    to {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+
   html {
     @apply scroll-smooth;
   }
