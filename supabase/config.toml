@@ -2,3 +2,6 @@ project_id = "ztalovpstpmaygngklgk"
 
 [functions.ai-prioritize-tasks]
 verify_jwt = true
+
+[functions.ai-summarize-meeting]
+verify_jwt = true
