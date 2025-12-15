@@ -22,8 +22,9 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { Clock, FolderKanban, CheckSquare, TrendingUp, CalendarIcon } from 'lucide-react';
+import { Clock, FolderKanban, CheckSquare, TrendingUp, CalendarIcon, Download } from 'lucide-react';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -167,6 +168,72 @@ const Reports = () => {
     return `${format(range.start, 'MMM d, yyyy')} - ${format(range.end, 'MMM d, yyyy')}`;
   };
 
+  const exportToCSV = () => {
+    // Build CSV content
+    const rows: string[][] = [];
+    
+    // Header
+    rows.push(['Time Tracking Report']);
+    rows.push(['Date Range:', getDateRangeLabel()]);
+    rows.push(['Generated:', format(new Date(), 'MMM d, yyyy HH:mm')]);
+    rows.push([]);
+    
+    // Summary
+    rows.push(['Summary']);
+    rows.push(['Total Time', formatDuration(totalSeconds)]);
+    rows.push(['Tasks Tracked', totalTasks.toString()]);
+    rows.push(['Projects', totalProjects.toString()]);
+    rows.push(['Total Entries', filteredEntries.length.toString()]);
+    rows.push([]);
+    
+    // Time by Task
+    rows.push(['Time by Task']);
+    rows.push(['Task', 'Duration', 'Hours']);
+    taskTimeData.forEach((t) => {
+      rows.push([t.fullName, formatDuration(t.seconds), t.hours.toFixed(2)]);
+    });
+    rows.push([]);
+    
+    // Time by Project
+    rows.push(['Time by Project']);
+    rows.push(['Project', 'Duration', 'Hours']);
+    projectTimeData.forEach((p) => {
+      rows.push([p.fullName, formatDuration(p.seconds), p.hours.toFixed(2)]);
+    });
+    rows.push([]);
+    
+    // Detailed entries
+    rows.push(['Detailed Time Entries']);
+    rows.push(['Task', 'Start Time', 'End Time', 'Duration']);
+    filteredEntries.forEach((entry) => {
+      const task = tasks.find((t) => t.id === entry.task_id);
+      rows.push([
+        task?.title || 'Unknown',
+        format(new Date(entry.start_time), 'MMM d, yyyy HH:mm'),
+        entry.end_time ? format(new Date(entry.end_time), 'MMM d, yyyy HH:mm') : 'In Progress',
+        entry.duration_seconds ? formatDuration(entry.duration_seconds) : '-',
+      ]);
+    });
+
+    // Convert to CSV string
+    const csvContent = rows
+      .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `time-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    toast({
+      title: 'Export Complete',
+      description: 'Your time tracking report has been downloaded.',
+    });
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -235,6 +302,17 @@ const Reports = () => {
                 </div>
               </PopoverContent>
             </Popover>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              disabled={filteredEntries.length === 0}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
           </div>
         </div>
 
