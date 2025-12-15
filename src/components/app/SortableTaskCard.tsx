@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
+import { TaskTimer } from './TaskTimer';
 
 interface SortableTaskCardProps {
   task: Task;
@@ -21,6 +22,13 @@ interface SortableTaskCardProps {
   onClick?: () => void;
   showDragHandle?: boolean;
   badges?: React.ReactNode;
+  timerProps?: {
+    isActive: boolean;
+    activeStartTime?: string;
+    totalSeconds: number;
+    onStart: () => void;
+    onStop: () => void;
+  };
 }
 
 const priorityColors = {
@@ -37,6 +45,7 @@ export const SortableTaskCard = ({
   onClick,
   showDragHandle = true,
   badges,
+  timerProps,
 }: SortableTaskCardProps) => {
   const {
     attributes,
@@ -142,6 +151,20 @@ export const SortableTaskCard = ({
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               {task.duration_minutes}m
+            </div>
+          )}
+
+          {timerProps && (
+            <div className="ml-auto">
+              <TaskTimer
+                taskId={task.id}
+                isActive={timerProps.isActive}
+                activeStartTime={timerProps.activeStartTime}
+                totalSeconds={timerProps.totalSeconds}
+                onStart={timerProps.onStart}
+                onStop={timerProps.onStop}
+                compact
+              />
             </div>
           )}
         </div>
