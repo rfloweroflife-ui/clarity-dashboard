@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
   LayoutDashboard,
   CheckSquare,
@@ -84,6 +85,7 @@ export const Sidebar = () => {
 
         {/* Footer */}
         <div className="border-t border-sidebar-border p-3 space-y-1">
+          <ThemeToggle collapsed={collapsed} />
           <Link
             to="/settings"
             className={cn(
