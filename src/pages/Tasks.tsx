@@ -19,6 +19,7 @@ import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTasks } from '@/hooks/useTasks';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { useWorkspaceMembers } from '@/hooks/useWorkspaceMembers';
+import { useLabels } from '@/hooks/useLabels';
 import { SortableTaskCard } from '@/components/app/SortableTaskCard';
 import { TaskCard } from '@/components/app/TaskCard';
 import { CreateTaskDialog } from '@/components/app/CreateTaskDialog';
@@ -38,12 +39,28 @@ const Tasks = () => {
     currentWorkspace?.id || null
   );
   const { members } = useWorkspaceMembers(currentWorkspace?.id || null);
+  const { labels, getLabelsForTask, addLabelToTask, removeLabelFromTask, createLabel } = useLabels(
+    currentWorkspace?.id || null
+  );
 
   const handleAssign = useCallback(
     (taskId: string, userId: string | null) => {
       updateTask(taskId, { assignee_id: userId });
     },
     [updateTask]
+  );
+
+  const handleToggleLabel = useCallback(
+    async (taskId: string, labelId: string) => {
+      const taskLabels = getLabelsForTask(taskId);
+      const hasLabel = taskLabels.some((l) => l.id === labelId);
+      if (hasLabel) {
+        await removeLabelFromTask(taskId, labelId);
+      } else {
+        await addLabelToTask(taskId, labelId);
+      }
+    },
+    [getLabelsForTask, addLabelToTask, removeLabelFromTask]
   );
 
   const todoTasks = useMemo(
@@ -200,6 +217,10 @@ const Tasks = () => {
                         onDelete={deleteTask}
                         onAssign={handleAssign}
                         members={members}
+                        taskLabels={getLabelsForTask(task.id)}
+                        allLabels={labels}
+                        onToggleLabel={handleToggleLabel}
+                        onCreateLabel={createLabel}
                         badges={
                           <>
                             {isQuickWin(task.id) && (

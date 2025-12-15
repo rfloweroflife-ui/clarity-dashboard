@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task } from '@/hooks/useTasks';
+import { Label } from '@/hooks/useLabels';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,8 @@ import {
 import { format } from 'date-fns';
 import { TaskTimer } from './TaskTimer';
 import { AssigneeSelect } from './AssigneeSelect';
+import { LabelBadge } from './LabelBadge';
+import { LabelSelect } from './LabelSelect';
 import { WorkspaceMember } from '@/hooks/useWorkspaceMembers';
 
 interface SortableTaskCardProps {
@@ -33,6 +36,10 @@ interface SortableTaskCardProps {
     onStop: () => void;
   };
   members?: WorkspaceMember[];
+  taskLabels?: Label[];
+  allLabels?: Label[];
+  onToggleLabel?: (taskId: string, labelId: string) => void;
+  onCreateLabel?: (name: string, color: string) => Promise<Label | null>;
 }
 
 const priorityColors = {
@@ -52,6 +59,10 @@ export const SortableTaskCard = ({
   badges,
   timerProps,
   members = [],
+  taskLabels = [],
+  allLabels = [],
+  onToggleLabel,
+  onCreateLabel,
 }: SortableTaskCardProps) => {
   const {
     attributes,
@@ -108,6 +119,15 @@ export const SortableTaskCard = ({
           </h3>
           <div className="flex items-center gap-2">
             {badges}
+            {allLabels.length > 0 && onToggleLabel && onCreateLabel && (
+              <LabelSelect
+                labels={allLabels}
+                selectedLabelIds={taskLabels.map((l) => l.id)}
+                onToggleLabel={(labelId) => onToggleLabel(task.id, labelId)}
+                onCreateLabel={onCreateLabel}
+                compact
+              />
+            )}
             {members.length > 0 && onAssign && (
               <AssigneeSelect
                 members={members}
@@ -147,6 +167,14 @@ export const SortableTaskCard = ({
         )}
 
         <div className="flex items-center gap-2 mt-3 flex-wrap">
+          {taskLabels.length > 0 && (
+            <div className="flex items-center gap-1 flex-wrap">
+              {taskLabels.map((label) => (
+                <LabelBadge key={label.id} label={label} size="sm" />
+              ))}
+            </div>
+          )}
+          
           <Badge
             variant="secondary"
             className={cn('text-xs', priorityColors[task.priority as keyof typeof priorityColors])}
