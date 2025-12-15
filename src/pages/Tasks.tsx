@@ -27,7 +27,8 @@ import { TaskDetailDialog } from '@/components/app/TaskDetailDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Zap, AlertTriangle, Loader2 } from 'lucide-react';
+import { LabelBadge } from '@/components/app/LabelBadge';
+import { Sparkles, Zap, AlertTriangle, Loader2, Filter, X } from 'lucide-react';
 import { useAIPrioritization } from '@/hooks/useAIPrioritization';
 
 const Tasks = () => {
@@ -46,6 +47,7 @@ const Tasks = () => {
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [filterLabelIds, setFilterLabelIds] = useState<string[]>([]);
 
   const openTaskDetail = (task: Task) => {
     setSelectedTask(task);
@@ -57,6 +59,35 @@ const Tasks = () => {
     const member = members.find((m) => m.user_id === assigneeId);
     return member?.profile?.full_name || 'Unknown';
   };
+
+  const toggleFilterLabel = (labelId: string) => {
+    setFilterLabelIds((prev) =>
+      prev.includes(labelId) ? prev.filter((id) => id !== labelId) : [...prev, labelId]
+    );
+  };
+
+  const clearFilters = () => setFilterLabelIds([]);
+
+  const getContrastColor = (hexColor: string) => {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  };
+
+  // Filter tasks by selected labels
+  const filterTasksByLabels = useCallback(
+    (taskList: Task[]) => {
+      if (filterLabelIds.length === 0) return taskList;
+      return taskList.filter((task) => {
+        const taskLabelIds = getLabelsForTask(task.id).map((l) => l.id);
+        return filterLabelIds.some((filterId) => taskLabelIds.includes(filterId));
+      });
+    },
+    [filterLabelIds, getLabelsForTask]
+  );
 
   const handleAssign = useCallback(
     (taskId: string, userId: string | null) => {
@@ -79,16 +110,16 @@ const Tasks = () => {
   );
 
   const todoTasks = useMemo(
-    () => tasks.filter((t) => t.status === 'todo').sort((a, b) => a.position - b.position),
-    [tasks]
+    () => filterTasksByLabels(tasks.filter((t) => t.status === 'todo').sort((a, b) => a.position - b.position)),
+    [tasks, filterTasksByLabels]
   );
   const inProgressTasks = useMemo(
-    () => tasks.filter((t) => t.status === 'in_progress').sort((a, b) => a.position - b.position),
-    [tasks]
+    () => filterTasksByLabels(tasks.filter((t) => t.status === 'in_progress').sort((a, b) => a.position - b.position)),
+    [tasks, filterTasksByLabels]
   );
   const completedTasks = useMemo(
-    () => tasks.filter((t) => t.status === 'completed'),
-    [tasks]
+    () => filterTasksByLabels(tasks.filter((t) => t.status === 'completed')),
+    [tasks, filterTasksByLabels]
   );
 
   // Sort by AI priority if available
@@ -173,6 +204,42 @@ const Tasks = () => {
             <CreateTaskDialog onCreateTask={createTask} />
           </div>
         </div>
+
+        {/* Label Filters */}
+        {labels.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Filter className="h-4 w-4" />
+              <span>Filter:</span>
+            </div>
+            {labels.map((label) => {
+              const isActive = filterLabelIds.includes(label.id);
+              return (
+                <button
+                  key={label.id}
+                  onClick={() => toggleFilterLabel(label.id)}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                    isActive
+                      ? 'ring-2 ring-offset-2 ring-primary ring-offset-background'
+                      : 'opacity-60 hover:opacity-100'
+                  }`}
+                  style={{
+                    backgroundColor: label.color,
+                    color: getContrastColor(label.color),
+                  }}
+                >
+                  {label.name}
+                </button>
+              );
+            })}
+            {filterLabelIds.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 gap-1">
+                <X className="h-3 w-3" />
+                Clear
+              </Button>
+            )}
+          </div>
+        )}
 
         {result && (
           <div className="rounded-lg border bg-card p-4 space-y-3">
