@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.ai-summarize-meeting]
 verify_jwt = true
+
+[functions.send-task-digest]
+verify_jwt = true
