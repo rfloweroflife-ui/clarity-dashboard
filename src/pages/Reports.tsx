@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/app/AppLayout';
 import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
@@ -6,6 +6,10 @@ import { useProjects } from '@/hooks/useProjects';
 import { useTasks } from '@/hooks/useTasks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
   BarChart,
   Bar,
@@ -17,11 +21,13 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
 } from 'recharts';
-import { Clock, FolderKanban, CheckSquare, TrendingUp } from 'lucide-react';
+import { Clock, FolderKanban, CheckSquare, TrendingUp, CalendarIcon } from 'lucide-react';
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
+type DateRange = 'today' | 'week' | 'month' | 'custom' | 'all';
 
 const formatDuration = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -30,72 +36,113 @@ const formatDuration = (seconds: number) => {
   return `${hours}h ${minutes}m`;
 };
 
+const getDateRange = (range: DateRange, customStart?: Date, customEnd?: Date) => {
+  const now = new Date();
+  switch (range) {
+    case 'today':
+      return { start: startOfDay(now), end: endOfDay(now) };
+    case 'week':
+      return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+    case 'month':
+      return { start: startOfMonth(now), end: endOfMonth(now) };
+    case 'custom':
+      return { 
+        start: customStart ? startOfDay(customStart) : startOfDay(now), 
+        end: customEnd ? endOfDay(customEnd) : endOfDay(now) 
+      };
+    case 'all':
+    default:
+      return null;
+  }
+};
+
 const Reports = () => {
   const { currentWorkspace } = useWorkspace();
   const { entries, loading: entriesLoading } = useTimeTracking(currentWorkspace?.id || null);
   const { projects, loading: projectsLoading } = useProjects(currentWorkspace?.id || null);
   const { tasks, loading: tasksLoading } = useTasks(currentWorkspace?.id || null);
 
+  const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [customStartDate, setCustomStartDate] = useState<Date>();
+  const [customEndDate, setCustomEndDate] = useState<Date>();
+
   const loading = entriesLoading || projectsLoading || tasksLoading;
 
+  // Filter entries by date range
+  const filteredEntries = useMemo(() => {
+    const range = getDateRange(dateRange, customStartDate, customEndDate);
+    if (!range) return entries;
+    
+    return entries.filter((entry) => {
+      const entryDate = new Date(entry.start_time);
+      return isWithinInterval(entryDate, { start: range.start, end: range.end });
+    });
+  }, [entries, dateRange, customStartDate, customEndDate]);
+
   // Calculate time per task
-  const taskTimeData = tasks
-    .map((task) => {
-      const totalSeconds = entries
-        .filter((e) => e.task_id === task.id && e.duration_seconds)
-        .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
-      return {
-        name: task.title.length > 20 ? task.title.slice(0, 20) + '...' : task.title,
-        fullName: task.title,
-        seconds: totalSeconds,
-        hours: Math.round((totalSeconds / 3600) * 100) / 100,
-      };
-    })
-    .filter((t) => t.seconds > 0)
-    .sort((a, b) => b.seconds - a.seconds)
-    .slice(0, 10);
+  const taskTimeData = useMemo(() => {
+    return tasks
+      .map((task) => {
+        const totalSeconds = filteredEntries
+          .filter((e) => e.task_id === task.id && e.duration_seconds)
+          .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
+        return {
+          name: task.title.length > 20 ? task.title.slice(0, 20) + '...' : task.title,
+          fullName: task.title,
+          seconds: totalSeconds,
+          hours: Math.round((totalSeconds / 3600) * 100) / 100,
+        };
+      })
+      .filter((t) => t.seconds > 0)
+      .sort((a, b) => b.seconds - a.seconds)
+      .slice(0, 10);
+  }, [tasks, filteredEntries]);
 
   // Calculate time per project
-  const projectTimeData = projects
-    .map((project) => {
-      const projectTaskIds = tasks.filter((t) => t.project_id === project.id).map((t) => t.id);
-      const totalSeconds = entries
-        .filter((e) => projectTaskIds.includes(e.task_id) && e.duration_seconds)
-        .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
-      return {
-        name: project.name.length > 15 ? project.name.slice(0, 15) + '...' : project.name,
-        fullName: project.name,
-        seconds: totalSeconds,
-        hours: Math.round((totalSeconds / 3600) * 100) / 100,
-        color: project.color,
-      };
-    })
-    .filter((p) => p.seconds > 0)
-    .sort((a, b) => b.seconds - a.seconds);
+  const projectTimeData = useMemo(() => {
+    const data = projects
+      .map((project) => {
+        const projectTaskIds = tasks.filter((t) => t.project_id === project.id).map((t) => t.id);
+        const totalSeconds = filteredEntries
+          .filter((e) => projectTaskIds.includes(e.task_id) && e.duration_seconds)
+          .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
+        return {
+          name: project.name.length > 15 ? project.name.slice(0, 15) + '...' : project.name,
+          fullName: project.name,
+          seconds: totalSeconds,
+          hours: Math.round((totalSeconds / 3600) * 100) / 100,
+          color: project.color,
+        };
+      })
+      .filter((p) => p.seconds > 0)
+      .sort((a, b) => b.seconds - a.seconds);
 
-  // Unassigned project time
-  const unassignedTaskIds = tasks.filter((t) => !t.project_id).map((t) => t.id);
-  const unassignedSeconds = entries
-    .filter((e) => unassignedTaskIds.includes(e.task_id) && e.duration_seconds)
-    .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
-  
-  if (unassignedSeconds > 0) {
-    projectTimeData.push({
-      name: 'No Project',
-      fullName: 'No Project',
-      seconds: unassignedSeconds,
-      hours: Math.round((unassignedSeconds / 3600) * 100) / 100,
-      color: '#6b7280',
-    });
-  }
+    // Unassigned project time
+    const unassignedTaskIds = tasks.filter((t) => !t.project_id).map((t) => t.id);
+    const unassignedSeconds = filteredEntries
+      .filter((e) => unassignedTaskIds.includes(e.task_id) && e.duration_seconds)
+      .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
+    
+    if (unassignedSeconds > 0) {
+      data.push({
+        name: 'No Project',
+        fullName: 'No Project',
+        seconds: unassignedSeconds,
+        hours: Math.round((unassignedSeconds / 3600) * 100) / 100,
+        color: '#6b7280',
+      });
+    }
+
+    return data;
+  }, [projects, tasks, filteredEntries]);
 
   // Total stats
-  const totalSeconds = entries
+  const totalSeconds = filteredEntries
     .filter((e) => e.duration_seconds)
     .reduce((sum, e) => sum + (e.duration_seconds || 0), 0);
-  const totalTasks = new Set(entries.map((e) => e.task_id)).size;
+  const totalTasks = new Set(filteredEntries.map((e) => e.task_id)).size;
   const totalProjects = new Set(
-    entries
+    filteredEntries
       .map((e) => tasks.find((t) => t.id === e.task_id)?.project_id)
       .filter(Boolean)
   ).size;
@@ -114,13 +161,90 @@ const Reports = () => {
     return null;
   };
 
+  const getDateRangeLabel = () => {
+    const range = getDateRange(dateRange, customStartDate, customEndDate);
+    if (!range) return 'All Time';
+    return `${format(range.start, 'MMM d, yyyy')} - ${format(range.end, 'MMM d, yyyy')}`;
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Time Reports</h1>
-          <p className="text-muted-foreground mt-1">Track your productivity and time allocation</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-foreground">Time Reports</h1>
+            <p className="text-muted-foreground mt-1">Track your productivity and time allocation</p>
+          </div>
+
+          {/* Date Range Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex rounded-lg border border-border bg-muted/50 p-1">
+              {(['all', 'today', 'week', 'month'] as DateRange[]).map((range) => (
+                <Button
+                  key={range}
+                  variant={dateRange === range ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDateRange(range)}
+                  className="text-xs"
+                >
+                  {range === 'all' ? 'All' : range === 'today' ? 'Today' : range === 'week' ? 'This Week' : 'This Month'}
+                </Button>
+              ))}
+            </div>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={dateRange === 'custom' ? 'default' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  {dateRange === 'custom' && customStartDate && customEndDate
+                    ? `${format(customStartDate, 'MMM d')} - ${format(customEndDate, 'MMM d')}`
+                    : 'Custom'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="end">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">Start Date</p>
+                    <Calendar
+                      mode="single"
+                      selected={customStartDate}
+                      onSelect={(date) => {
+                        setCustomStartDate(date);
+                        if (date) setDateRange('custom');
+                      }}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">End Date</p>
+                    <Calendar
+                      mode="single"
+                      selected={customEndDate}
+                      onSelect={(date) => {
+                        setCustomEndDate(date);
+                        if (date) setDateRange('custom');
+                      }}
+                      disabled={(date) => customStartDate ? date < customStartDate : false}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
+
+        {/* Active Filter Indicator */}
+        {dateRange !== 'all' && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CalendarIcon className="h-4 w-4" />
+            <span>Showing data for: {getDateRangeLabel()}</span>
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
