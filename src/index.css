@@ -30,7 +30,7 @@
     --muted: 44 15% 90%;
     --muted-foreground: 212 8% 45%;
 
-    --accent: 46 65% 52%;
+    --accent: 46 50% 48%;
     --accent-foreground: 213 36% 6%;
 
     --destructive: 0 72% 51%;
@@ -39,19 +39,19 @@
     --success: 142 70% 35%;
     --success-foreground: 44 33% 94%;
 
-    --warning: 46 65% 52%;
+    --warning: 46 50% 48%;
     --warning-foreground: 213 36% 6%;
 
     --border: 44 20% 85%;
     --input: 44 20% 88%;
-    --ring: 46 65% 52%;
+    --ring: 46 50% 48%;
 
     --radius: 0.625rem;
 
     /* Brand-specific colors - Luxury Spa */
     --brand-blue: 210 76% 17%;
     --brand-black: 214 36% 4%;
-    --brand-gold: 46 65% 52%;
+    --brand-gold: 46 45% 45%;
     --brand-offwhite: 44 33% 94%;
     --brand-gray: 212 8% 69%;
 
@@ -65,7 +65,7 @@
     --sidebar-accent: 44 20% 92%;
     --sidebar-accent-foreground: 213 36% 6%;
     --sidebar-border: 44 20% 85%;
-    --sidebar-ring: 46 65% 52%;
+    --sidebar-ring: 46 50% 48%;
   }
 
   .dark {
@@ -87,7 +87,7 @@
     --muted: 214 25% 15%;
     --muted-foreground: 212 8% 69%;
 
-    --accent: 46 65% 52%;
+    --accent: 46 45% 45%;
     --accent-foreground: 213 36% 6%;
 
     --destructive: 0 62% 40%;
@@ -96,12 +96,12 @@
     --success: 142 70% 35%;
     --success-foreground: 44 33% 94%;
 
-    --warning: 46 65% 52%;
+    --warning: 46 45% 45%;
     --warning-foreground: 213 36% 6%;
 
-    --border: 46 30% 20%;
+    --border: 46 20% 18%;
     --input: 214 25% 12%;
-    --ring: 46 65% 52%;
+    --ring: 46 45% 45%;
 
     --sidebar-background: 214 36% 4%;
     --sidebar-foreground: 44 33% 94%;
@@ -109,8 +109,8 @@
     --sidebar-primary-foreground: 44 33% 94%;
     --sidebar-accent: 214 25% 12%;
     --sidebar-accent-foreground: 44 33% 94%;
-    --sidebar-border: 46 30% 20%;
-    --sidebar-ring: 46 65% 52%;
+    --sidebar-border: 46 20% 18%;
+    --sidebar-ring: 46 45% 45%;
   }
 }
 
@@ -170,8 +170,8 @@
   }
   
   .card-hover:hover {
-    box-shadow: 0 8px 30px -12px hsl(var(--brand-gold) / 0.15);
-    border-color: hsl(var(--brand-gold) / 0.3);
+    box-shadow: 0 8px 30px -12px hsl(var(--brand-gold) / 0.1);
+    border-color: hsl(var(--brand-gold) / 0.2);
   }
 
   /* Navigation link styling */
@@ -182,17 +182,17 @@
   /* Luxury feature card */
   .feature-card {
     @apply p-6 rounded-[14px] border bg-card transition-all duration-300 cursor-pointer;
-    border-color: hsl(var(--brand-gold) / 0.1);
+    border-color: hsl(var(--brand-gold) / 0.08);
   }
 
   .feature-card:hover {
-    border-color: hsl(var(--brand-gold) / 0.3);
-    box-shadow: 0 8px 30px -12px hsl(var(--brand-gold) / 0.1);
+    border-color: hsl(var(--brand-gold) / 0.2);
+    box-shadow: 0 8px 30px -12px hsl(var(--brand-gold) / 0.08);
   }
 
   .feature-card.active {
-    border-color: hsl(var(--brand-gold) / 0.5);
-    background: hsl(var(--brand-gold) / 0.05);
+    border-color: hsl(var(--brand-gold) / 0.35);
+    background: hsl(var(--brand-gold) / 0.03);
   }
 
   /* Primary CTA button with gold accent */
@@ -200,12 +200,12 @@
     @apply font-medium px-6 py-3 rounded-[10px] transition-all duration-200;
     background: hsl(var(--brand-blue));
     color: hsl(var(--brand-offwhite));
-    border: 1px solid hsl(var(--brand-gold) / 0.3);
+    border: 1px solid hsl(var(--brand-gold) / 0.15);
   }
 
   .cta-button:hover {
-    border-color: hsl(var(--brand-gold) / 0.8);
-    box-shadow: 0 0 20px hsl(var(--brand-gold) / 0.2);
+    border-color: hsl(var(--brand-gold) / 0.4);
+    box-shadow: 0 0 20px hsl(var(--brand-gold) / 0.1);
   }
 
   /* Outline CTA button */
@@ -217,8 +217,8 @@
   }
 
   .cta-button-outline:hover {
-    border-color: hsl(var(--brand-gold) / 0.5);
-    background: hsl(var(--brand-gold) / 0.05);
+    border-color: hsl(var(--brand-gold) / 0.3);
+    background: hsl(var(--brand-gold) / 0.03);
   }
 
   /* Logo scroll animation */
@@ -250,7 +250,7 @@
   /* Testimonial card */
   .testimonial-card {
     @apply p-8 rounded-[14px] bg-card;
-    border: 1px solid hsl(var(--brand-gold) / 0.15);
+    border: 1px solid hsl(var(--brand-gold) / 0.1);
   }
 
   /* Gold divider */
@@ -258,7 +258,7 @@
     height: 1px;
     background: linear-gradient(90deg, 
       transparent 0%, 
-      hsl(var(--brand-gold) / 0.3) 50%, 
+      hsl(var(--brand-gold) / 0.2) 50%, 
       transparent 100%
     );
   }
@@ -269,13 +269,13 @@
   }
 
   .luxury-input:focus {
-    box-shadow: 0 0 0 2px hsl(var(--brand-gold) / 0.3);
-    border-color: hsl(var(--brand-gold) / 0.5);
+    box-shadow: 0 0 0 2px hsl(var(--brand-gold) / 0.15);
+    border-color: hsl(var(--brand-gold) / 0.3);
   }
 
   /* Gold accent border */
   .border-gold-accent {
-    border-color: hsl(var(--brand-gold) / 0.2);
+    border-color: hsl(var(--brand-gold) / 0.12);
   }
 
   /* Luxury shadow */
