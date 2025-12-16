@@ -716,16 +716,10 @@ export type Database = {
     }
     Functions: {
       has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
-      is_workspace_member: {
-        Args: { _user_id: string; _workspace_id: string }
-        Returns: boolean
-      }
+      is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
