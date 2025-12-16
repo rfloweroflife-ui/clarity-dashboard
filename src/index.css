@@ -306,4 +306,91 @@
   .tracking-luxury-wide {
     letter-spacing: 0.04em;
   }
+
+  /* Dashboard glass card */
+  .glass-card {
+    @apply rounded-[14px] border bg-card;
+    border-color: hsl(var(--brand-gold) / 0.08);
+    box-shadow: 0 4px 20px -4px hsl(var(--brand-black) / 0.05);
+  }
+
+  .dark .glass-card {
+    background: hsl(214 30% 8%);
+    border-color: hsl(var(--brand-gold) / 0.1);
+    box-shadow: 0 4px 30px -10px hsl(var(--brand-black) / 0.4);
+  }
+
+  /* Metric label styling */
+  .metric-label {
+    @apply text-xs font-medium uppercase tracking-widest text-muted-foreground;
+  }
+
+  /* Metric value styling */
+  .metric-value {
+    @apply text-foreground;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Trend indicators */
+  .trend-up {
+    color: hsl(var(--success));
+  }
+
+  .trend-down {
+    color: hsl(var(--destructive));
+  }
+
+  /* Primary glow effect */
+  .glow-primary {
+    text-shadow: 0 0 40px hsl(var(--primary) / 0.3);
+  }
+
+  .dark .glow-primary {
+    text-shadow: 0 0 60px hsl(var(--primary) / 0.5);
+  }
+
+  /* Pulse glow for attention items */
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  /* Fade in animations with delays */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .fade-in-delay-1 {
+    animation: fadeIn 0.5s ease-out 0.1s forwards;
+    opacity: 0;
+  }
+
+  .fade-in-delay-2 {
+    animation: fadeIn 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .fade-in-delay-3 {
+    animation: fadeIn 0.5s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
