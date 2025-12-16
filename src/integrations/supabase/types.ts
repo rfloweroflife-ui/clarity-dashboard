@@ -269,6 +269,8 @@ export type Database = {
       meeting_attendees: {
         Row: {
           email: string | null
+          guest_token_expires_at: string | null
+          guest_token_hash: string | null
           id: string
           meeting_id: string
           status: string | null
@@ -276,6 +278,8 @@ export type Database = {
         }
         Insert: {
           email?: string | null
+          guest_token_expires_at?: string | null
+          guest_token_hash?: string | null
           id?: string
           meeting_id: string
           status?: string | null
@@ -283,6 +287,8 @@ export type Database = {
         }
         Update: {
           email?: string | null
+          guest_token_expires_at?: string | null
+          guest_token_hash?: string | null
           id?: string
           meeting_id?: string
           status?: string | null
@@ -712,14 +718,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      meeting_attendees_safe: {
+        Row: {
+          email: string | null
+          guest_token_expires_at: string | null
+          id: string | null
+          meeting_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_attendees_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      generate_guest_token: { Args: { p_attendee_id: string }; Returns: string }
+      guest_get_meeting: {
+        Args: { p_token: string }
+        Returns: {
+          attendee_email: string
+          attendee_id: string
+          attendee_status: string
+          meeting_id: string
+          meeting_link: string
+          meeting_status: string
+          meeting_title: string
+        }[]
+      }
+      guest_update_rsvp: {
+        Args: { p_status: string; p_token: string }
+        Returns: boolean
+      }
       has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
+      verify_guest_token: { Args: { p_token: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"
