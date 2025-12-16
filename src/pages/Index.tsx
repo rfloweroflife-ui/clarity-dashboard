@@ -21,21 +21,21 @@ const Index = () => {
           {/* Hero Revenue */}
           <div className="glass-card flex-1 flex items-center justify-center p-6 fade-in-delay-1 glow-primary">
             <HeroMetric
-              label="Today's Revenue"
+              label="Revenue Today"
               value="$847K"
               change={23.5}
-              changeLabel="vs last week"
+              changeLabel="compared to last week"
             />
           </div>
 
           {/* Attention Required */}
           <div className="fade-in-delay-2">
-            <h2 className="metric-label mb-2">Requires Decision</h2>
+            <h2 className="metric-label mb-2">Decision Needed</h2>
             <AttentionItem
               type="opportunity"
-              title="TikTok campaign overperforming"
+              title="TikTok campaign exceeding expectations"
               metric="+340%"
-              description="Scale budget?"
+              description="Increase budget allocation?"
             />
           </div>
         </div>
@@ -44,53 +44,53 @@ const Index = () => {
         <div className="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4 content-start">
           {/* Row 1 */}
           <MetricCard
-            label="Gross Margin"
+            label="Gross Margin Rate"
             value="68.4%"
             change={2.1}
-            changeLabel="vs target"
+            changeLabel="against target"
             className="fade-in-delay-1"
             highlight
           />
           <MetricCard
-            label="Cash Position"
+            label="Cash on Hand"
             value="$4.2M"
             change={-8.3}
-            changeLabel="burn rate"
+            changeLabel="at current burn"
             className="fade-in-delay-1"
           />
 
           {/* Row 2 */}
           <MetricCard
-            label="CAC"
+            label="Customer Acquisition Cost"
             value="$12.40"
             change={-15.2}
-            changeLabel="improving"
+            changeLabel="trending down"
             className="fade-in-delay-2"
           />
           <MetricCard
-            label="LTV:CAC"
+            label="LTV to CAC"
             value="5.8x"
             change={0.4}
-            changeLabel="ratio"
+            changeLabel="multiple"
             className="fade-in-delay-2"
           />
 
           {/* Health Indicators */}
           <div className="col-span-2 glass-card p-4 fade-in-delay-3">
-            <h2 className="metric-label mb-3">System Health</h2>
+            <h2 className="metric-label mb-3">Operational Health</h2>
             <div className="space-y-2">
               <SparkIndicator
-                label="Inventory levels"
+                label="Inventory coverage"
                 value="42 days"
                 status="healthy"
               />
               <SparkIndicator
-                label="Fulfillment rate"
+                label="Fulfillment performance"
                 value="98.7%"
                 status="healthy"
               />
               <SparkIndicator
-                label="Return rate"
+                label="Returns rate"
                 value="4.2%"
                 status="warning"
               />
@@ -115,7 +115,7 @@ const Index = () => {
       {/* Footer */}
       <div className="mt-4 text-center fade-in-delay-3">
         <span className="text-muted-foreground/50 text-xs uppercase tracking-widest">
-          Data refreshes every 5 minutes
+          Metrics update every 5 minutes
         </span>
       </div>
     </div>
