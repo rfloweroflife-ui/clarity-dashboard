@@ -15,6 +15,7 @@ import Meetings from "./pages/Meetings";
 import Journal from "./pages/Journal";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Shop from "./pages/Shop";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/journal" element={<Journal />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/shop" element={<Shop />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
