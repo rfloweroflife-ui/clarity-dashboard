@@ -26,7 +26,7 @@ interface MeetingDetailDialogProps {
   meeting: Meeting | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdateMeeting: (id: string, updates: Partial<Meeting>) => Promise<void>;
+  onUpdateMeeting: (id: string, updates: Partial<Meeting>) => Promise<unknown>;
 }
 
 export const MeetingDetailDialog = ({
