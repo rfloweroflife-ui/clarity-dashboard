@@ -59,11 +59,12 @@ export const useAIPrioritization = () => {
       });
 
       return data as PrioritizationResult;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Could not prioritize tasks. Please try again.";
       console.error('AI prioritization error:', error);
       toast({
         title: "Prioritization failed",
-        description: error.message || "Could not prioritize tasks. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;

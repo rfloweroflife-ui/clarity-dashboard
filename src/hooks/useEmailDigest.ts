@@ -30,7 +30,7 @@ export function useEmailDigest() {
       } else if (data?.message) {
         toast.info(data.message);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending digest:', error);
       toast.error('Failed to send digest email');
     } finally {
