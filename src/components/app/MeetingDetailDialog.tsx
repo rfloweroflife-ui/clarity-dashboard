@@ -26,7 +26,7 @@ interface MeetingDetailDialogProps {
   meeting: Meeting | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdateMeeting: (id: string, updates: Partial<Meeting>) => Promise<any>;
+  onUpdateMeeting: (id: string, updates: Partial<Meeting>) => Promise<void>;
 }
 
 export const MeetingDetailDialog = ({
@@ -176,7 +176,7 @@ export const MeetingDetailDialog = ({
                       Action Items
                     </h3>
                     <ul className="space-y-2">
-                      {parsedSummary.action_items.map((item: any, i: number) => (
+                      {parsedSummary.action_items.map((item: { owner?: string; task: string }, i: number) => (
                         <li key={i} className="flex items-start gap-2">
                           <Badge variant="outline" className="shrink-0">
                             {item.owner || 'Unassigned'}

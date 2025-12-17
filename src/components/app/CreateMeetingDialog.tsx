@@ -16,7 +16,7 @@ interface CreateMeetingDialogProps {
   onCreateMeeting: (meeting: {
     title: string;
     meeting_link?: string;
-  }) => Promise<any>;
+  }) => Promise<void>;
 }
 
 export const CreateMeetingDialog = ({ onCreateMeeting }: CreateMeetingDialogProps) => {

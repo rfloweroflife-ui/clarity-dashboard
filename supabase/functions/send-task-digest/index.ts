@@ -39,8 +39,20 @@ interface TaskDigestRequest {
   currentHour?: number;
 }
 
+interface Task {
+  id: string;
+  title: string;
+  due_date?: string;
+  priority?: 'urgent' | 'high' | 'medium' | 'low';
+  status?: string;
+}
+
+interface WorkspaceMembership {
+  workspace_id: string;
+}
+
 async function sendDigestForUser(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   userId: string,
   email: string
 ): Promise<{ success: boolean; message: string }> {
@@ -57,7 +69,7 @@ async function sendDigestForUser(
     throw membershipError;
   }
 
-  const workspaceIds = memberships?.map((m: any) => m.workspace_id) || [];
+  const workspaceIds = memberships?.map((m: WorkspaceMembership) => m.workspace_id) || [];
 
   if (workspaceIds.length === 0) {
     return { success: true, message: "No workspaces found" };
@@ -90,13 +102,15 @@ async function sendDigestForUser(
   }
 
   // Categorize tasks
-  const overdueTasks = tasks.filter((t: any) => new Date(t.due_date!) < today);
-  const dueToday = tasks.filter((t: any) => {
-    const dueDate = new Date(t.due_date!);
+  const overdueTasks = tasks.filter((t: Task) => t.due_date && new Date(t.due_date) < today);
+  const dueToday = tasks.filter((t: Task) => {
+    if (!t.due_date) return false;
+    const dueDate = new Date(t.due_date);
     return dueDate >= today && dueDate < tomorrow;
   });
-  const dueTomorrow = tasks.filter((t: any) => {
-    const dueDate = new Date(t.due_date!);
+  const dueTomorrow = tasks.filter((t: Task) => {
+    if (!t.due_date) return false;
+    const dueDate = new Date(t.due_date);
     return dueDate >= tomorrow && dueDate < dayAfterTomorrow;
   });
 
@@ -109,7 +123,7 @@ async function sendDigestForUser(
     low: "#22c55e",
   };
 
-  const formatTaskList = (taskList: any[], sectionTitle: string, color: string) => {
+  const formatTaskList = (taskList: Task[], sectionTitle: string, color: string) => {
     if (taskList.length === 0) return "";
     return `
       <div style="margin-bottom: 24px;">
@@ -244,10 +258,11 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify(result),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Error in send-task-digest function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

@@ -203,7 +203,13 @@ Be concise but comprehensive. Use bullet points for clarity.`
   }
 });
 
-function formatSummaryForStorage(result: any): string {
+function formatSummaryForStorage(result: {
+  summary: string;
+  key_points?: string[];
+  decisions?: string[];
+  action_items?: Array<{ task: string; owner?: string }>;
+  questions?: string[];
+}): string {
   let formatted = `## Summary\n${result.summary}\n\n`;
   
   if (result.key_points?.length > 0) {
@@ -215,7 +221,7 @@ function formatSummaryForStorage(result: any): string {
   }
   
   if (result.action_items?.length > 0) {
-    formatted += `## Action Items\n${result.action_items.map((a: any) => 
+    formatted += `## Action Items\n${result.action_items.map((a: { task: string; owner?: string }) => 
       `- ${a.task}${a.owner ? ` (Owner: ${a.owner})` : ''}`
     ).join('\n')}\n\n`;
   }

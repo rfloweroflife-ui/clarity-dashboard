@@ -48,11 +48,12 @@ export const useAIMeetingSummary = () => {
       });
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Could not generate summary. Please try again.";
       console.error('AI summarization error:', error);
       toast({
         title: "Summarization failed",
-        description: error.message || "Could not generate summary. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;
