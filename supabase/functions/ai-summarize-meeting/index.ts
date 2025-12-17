@@ -209,24 +209,25 @@ function formatSummaryForStorage(result: {
   decisions?: string[];
   action_items?: Array<{ task: string; owner?: string }>;
   questions?: string[];
+  follow_ups?: string[];
 }): string {
   let formatted = `## Summary\n${result.summary}\n\n`;
   
-  if (result.key_points?.length > 0) {
+  if (result.key_points && result.key_points.length > 0) {
     formatted += `## Key Points\n${result.key_points.map((p: string) => `- ${p}`).join('\n')}\n\n`;
   }
   
-  if (result.decisions?.length > 0) {
+  if (result.decisions && result.decisions.length > 0) {
     formatted += `## Decisions\n${result.decisions.map((d: string) => `- ${d}`).join('\n')}\n\n`;
   }
   
-  if (result.action_items?.length > 0) {
+  if (result.action_items && result.action_items.length > 0) {
     formatted += `## Action Items\n${result.action_items.map((a: { task: string; owner?: string }) => 
       `- ${a.task}${a.owner ? ` (Owner: ${a.owner})` : ''}`
     ).join('\n')}\n\n`;
   }
   
-  if (result.follow_ups?.length > 0) {
+  if (result.follow_ups && result.follow_ups.length > 0) {
     formatted += `## Follow-ups\n${result.follow_ups.map((f: string) => `- ${f}`).join('\n')}`;
   }
   
