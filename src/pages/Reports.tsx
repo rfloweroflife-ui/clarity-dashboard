@@ -148,7 +148,7 @@ const Reports = () => {
       .filter(Boolean)
   ).size;
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ payload: { fullName: string; hours: number } }>; label?: string }) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ payload: { fullName: string; hours: number; seconds: number } }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">

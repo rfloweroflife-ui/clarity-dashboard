@@ -1,40 +1,58 @@
-import { ProductCard } from "@/components/shop/ProductCard";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-
-// Sample products with updated pricing from Shopify
-const products = [
-  {
-    id: "1",
-    title: "Moisturizing Skin Anti-wrinkle Firming Fade Spots 5-in-1 Facial",
-    price: "18.95",
-    compareAtPrice: "29.95",
-    image: "/placeholder.svg",
-    vendor: "Aura Lift Essentials",
-  },
-  {
-    id: "2",
-    title: "PDRN Collagen Jelly Cream 50ml",
-    price: "24.95",
-    compareAtPrice: "34.95",
-    image: "/placeholder.svg",
-    vendor: "Aura Lift Essentials",
-  },
-  {
-    id: "3",
-    title: "Hydrating Essence Serum",
-    price: "21.95",
-    compareAtPrice: "29.95",
-    image: "/placeholder.svg",
-    vendor: "Aura Lift Essentials",
-  },
-];
+import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
+import { useCartStore } from "@/stores/cartStore";
+import { CartDrawer } from "@/components/shop/CartDrawer";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const Shop = () => {
-  const handleAddToCart = (productTitle: string) => {
-    toast.success(`Added "${productTitle}" to cart`);
+  const [products, setProducts] = useState<ShopifyProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const addItem = useCartStore((state) => state.addItem);
+  const totalItems = useCartStore((state) => state.items.reduce((sum, item) => sum + item.quantity, 0));
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchShopifyProducts(50);
+      setProducts(data);
+    } catch (err) {
+      setError("Failed to load products. Please try again.");
+      console.error("Error loading products:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddToCart = (product: ShopifyProduct) => {
+    const firstVariant = product.node.variants.edges[0]?.node;
+    if (!firstVariant) {
+      toast.error("This product is not available");
+      return;
+    }
+
+    addItem({
+      product,
+      variantId: firstVariant.id,
+      variantTitle: firstVariant.title,
+      price: firstVariant.price,
+      quantity: 1,
+      selectedOptions: firstVariant.selectedOptions || [],
+    });
+
+    toast.success(`Added "${product.node.title}" to cart`, {
+      position: "top-center",
+    });
   };
 
   return (
@@ -49,12 +67,7 @@ const Shop = () => {
           
           <h1 className="text-lg font-semibold tracking-luxury">Shop</h1>
           
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-              0
-            </span>
-          </Button>
+          <CartDrawer />
         </div>
       </header>
 
@@ -77,20 +90,106 @@ const Shop = () => {
           </p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-3 text-muted-foreground">Loading products...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <p className="text-destructive mb-4">{error}</p>
+            <Button onClick={loadProducts} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && products.length === 0 && (
+          <div className="text-center py-20">
+            <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No products found</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Tell me what products you'd like to add to your store!
+            </p>
+          </div>
+        )}
+
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              title={product.title}
-              price={product.price}
-              compareAtPrice={product.compareAtPrice}
-              image={product.image}
-              vendor={product.vendor}
-              onAddToCart={() => handleAddToCart(product.title)}
-            />
-          ))}
-        </div>
+        {!loading && !error && products.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.map((product) => {
+              const firstVariant = product.node.variants.edges[0]?.node;
+              const price = firstVariant?.price.amount || product.node.priceRange.minVariantPrice.amount;
+              const image = product.node.images.edges[0]?.node.url;
+              
+              return (
+                <Card 
+                  key={product.node.id} 
+                  className="group glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-[hsl(var(--brand-gold)/0.2)]"
+                >
+                  {/* Product Image */}
+                  <div className="relative aspect-square overflow-hidden bg-muted/30">
+                    {image ? (
+                      <img
+                        src={image}
+                        alt={product.node.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/50 to-muted">
+                        <ShoppingBag className="h-12 w-12 text-muted-foreground/40" />
+                      </div>
+                    )}
+                    
+                    {/* Available Badge */}
+                    {firstVariant?.availableForSale === false && (
+                      <Badge className="absolute left-3 top-3 bg-muted text-muted-foreground">
+                        Out of Stock
+                      </Badge>
+                    )}
+                  </div>
+
+                  <CardContent className="p-4 space-y-3">
+                    {/* Title */}
+                    <h3 className="font-medium text-foreground line-clamp-2 leading-snug">
+                      {product.node.title}
+                    </h3>
+
+                    {/* Description */}
+                    {product.node.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {product.node.description}
+                      </p>
+                    )}
+
+                    {/* Pricing */}
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-lg font-semibold text-foreground">
+                        {firstVariant?.price.currencyCode || 'USD'} {parseFloat(price).toFixed(2)}
+                      </span>
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <Button 
+                      onClick={() => handleAddToCart(product)}
+                      className="w-full mt-2 cta-button"
+                      size="sm"
+                      disabled={firstVariant?.availableForSale === false}
+                    >
+                      <ShoppingBag className="mr-2 h-4 w-4" />
+                      Add to Cart
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       {/* Footer */}

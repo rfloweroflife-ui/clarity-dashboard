@@ -16,7 +16,7 @@ interface CreateMeetingDialogProps {
   onCreateMeeting: (meeting: {
     title: string;
     meeting_link?: string;
-  }) => Promise<void>;
+  }) => Promise<unknown>;
 }
 
 export const CreateMeetingDialog = ({ onCreateMeeting }: CreateMeetingDialogProps) => {
@@ -35,7 +35,7 @@ export const CreateMeetingDialog = ({ onCreateMeeting }: CreateMeetingDialogProp
       meeting_link: meetingLink.trim() || undefined,
     });
 
-    if (result) {
+    if (result !== null) {
       setTitle('');
       setMeetingLink('');
       setOpen(false);
