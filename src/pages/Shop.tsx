@@ -127,66 +127,75 @@ const Shop = () => {
               const price = firstVariant?.price.amount || product.node.priceRange.minVariantPrice.amount;
               const image = product.node.images.edges[0]?.node.url;
               
-              return (
-                <Card 
-                  key={product.node.id} 
-                  className="group glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-[hsl(var(--brand-gold)/0.2)]"
-                >
-                  {/* Product Image */}
-                  <div className="relative aspect-square overflow-hidden bg-muted/30">
-                    {image ? (
-                      <img
-                        src={image}
-                        alt={product.node.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/50 to-muted">
-                        <ShoppingBag className="h-12 w-12 text-muted-foreground/40" />
-                      </div>
-                    )}
-                    
-                    {/* Available Badge */}
-                    {firstVariant?.availableForSale === false && (
-                      <Badge className="absolute left-3 top-3 bg-muted text-muted-foreground">
-                        Out of Stock
-                      </Badge>
-                    )}
-                  </div>
-
-                  <CardContent className="p-4 space-y-3">
-                    {/* Title */}
-                    <h3 className="font-medium text-foreground line-clamp-2 leading-snug">
-                      {product.node.title}
-                    </h3>
-
-                    {/* Description */}
-                    {product.node.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {product.node.description}
-                      </p>
-                    )}
-
-                    {/* Pricing */}
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-semibold text-foreground">
-                        {firstVariant?.price.currencyCode || 'USD'} {parseFloat(price).toFixed(2)}
-                      </span>
-                    </div>
-
-                    {/* Add to Cart Button */}
-                    <Button 
-                      onClick={() => handleAddToCart(product)}
-                      className="w-full mt-2 cta-button"
-                      size="sm"
-                      disabled={firstVariant?.availableForSale === false}
+                return (
+                  <Link 
+                    key={product.node.id} 
+                    to={`/shop/product/${product.node.handle}`}
+                    className="block"
+                  >
+                    <Card 
+                      className="group glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-[hsl(var(--brand-gold)/0.2)] h-full"
                     >
-                      <ShoppingBag className="mr-2 h-4 w-4" />
-                      Add to Cart
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
+                      {/* Product Image */}
+                      <div className="relative aspect-square overflow-hidden bg-muted/30">
+                        {image ? (
+                          <img
+                            src={image}
+                            alt={product.node.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/50 to-muted">
+                            <ShoppingBag className="h-12 w-12 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        
+                        {/* Available Badge */}
+                        {firstVariant?.availableForSale === false && (
+                          <Badge className="absolute left-3 top-3 bg-muted text-muted-foreground">
+                            Out of Stock
+                          </Badge>
+                        )}
+                      </div>
+
+                      <CardContent className="p-4 space-y-3">
+                        {/* Title */}
+                        <h3 className="font-medium text-foreground line-clamp-2 leading-snug">
+                          {product.node.title}
+                        </h3>
+
+                        {/* Description */}
+                        {product.node.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {product.node.description}
+                          </p>
+                        )}
+
+                        {/* Pricing */}
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-lg font-semibold text-foreground">
+                            {firstVariant?.price.currencyCode || 'USD'} {parseFloat(price).toFixed(2)}
+                          </span>
+                        </div>
+
+                        {/* Add to Cart Button */}
+                        <Button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddToCart(product);
+                          }}
+                          className="w-full mt-2 cta-button"
+                          size="sm"
+                          disabled={firstVariant?.availableForSale === false}
+                        >
+                          <ShoppingBag className="mr-2 h-4 w-4" />
+                          Add to Cart
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
             })}
           </div>
         )}

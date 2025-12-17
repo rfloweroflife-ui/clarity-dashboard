@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ interface ProductCardProps {
   compareAtPrice?: string;
   image?: string;
   vendor?: string;
+  handle?: string;
   onAddToCart?: () => void;
 }
 
@@ -18,6 +20,7 @@ export const ProductCard = ({
   compareAtPrice,
   image,
   vendor,
+  handle,
   onAddToCart,
 }: ProductCardProps) => {
   const hasDiscount = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
@@ -25,7 +28,24 @@ export const ProductCard = ({
     ? Math.round((1 - parseFloat(price) / parseFloat(compareAtPrice)) * 100)
     : 0;
 
-  return (
+  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (handle) {
+      return (
+        <Link to={`/shop/product/${handle}`} className="block">
+          {children}
+        </Link>
+      );
+    }
+    return <>{children}</>;
+  };
+
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onAddToCart?.();
+  };
+
+  const cardContent = (
     <Card className="group glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-[hsl(var(--brand-gold)/0.2)]">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-muted/30">
@@ -76,7 +96,7 @@ export const ProductCard = ({
 
         {/* Add to Cart Button */}
         <Button 
-          onClick={onAddToCart}
+          onClick={handleAddToCartClick}
           className="w-full mt-2 cta-button"
           size="sm"
         >
@@ -86,4 +106,6 @@ export const ProductCard = ({
       </CardContent>
     </Card>
   );
+
+  return <CardWrapper>{cardContent}</CardWrapper>;
 };
