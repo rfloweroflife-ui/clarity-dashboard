@@ -51,8 +51,9 @@ interface WorkspaceMembership {
   workspace_id: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function sendDigestForUser(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   email: string
 ): Promise<{ success: boolean; message: string }> {
