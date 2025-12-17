@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/select";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlist } from "@/hooks/useWishlist";
 import { storefrontApiRequest } from "@/lib/shopify";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Check } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Check, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProductDetailNode {
@@ -129,6 +130,7 @@ const ProductDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -393,16 +395,36 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Add to Cart */}
-            <Button
-              onClick={handleAddToCart}
-              disabled={!selectedVariant?.availableForSale}
-              className="w-full cta-button h-12 text-base"
-              size="lg"
-            >
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              Add to Cart
-            </Button>
+            {/* Add to Cart & Wishlist */}
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddToCart}
+                disabled={!selectedVariant?.availableForSale}
+                className="flex-1 cta-button h-12 text-base"
+                size="lg"
+              >
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                Add to Cart
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-12 px-4"
+                onClick={() => {
+                  const image = product.images?.edges?.[0]?.node?.url;
+                  const price = selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount;
+                  toggleWishlist(product.handle, product.title, image, price);
+                }}
+              >
+                <Heart
+                  className={`h-5 w-5 ${
+                    isInWishlist(product.handle)
+                      ? "fill-red-500 text-red-500"
+                      : ""
+                  }`}
+                />
+              </Button>
+            </div>
 
             {/* Description */}
             {product.description && (

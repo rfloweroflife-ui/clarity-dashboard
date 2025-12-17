@@ -8,11 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, ShoppingBag, Loader2, Search, X, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Loader2, Search, X, SlidersHorizontal, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlist } from "@/hooks/useWishlist";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("default");
   const addItem = useCartStore((state) => state.addItem);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     loadProducts();
@@ -313,6 +315,29 @@ const Shop = () => {
                           <ShoppingBag className="h-12 w-12 text-muted-foreground/40" />
                         </div>
                       )}
+                      
+                      {/* Wishlist Heart */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleWishlist(
+                            product.node.handle,
+                            product.node.title,
+                            image,
+                            price
+                          );
+                        }}
+                        className="absolute right-3 top-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+                      >
+                        <Heart
+                          className={`h-4 w-4 transition-colors ${
+                            isInWishlist(product.node.handle)
+                              ? "fill-red-500 text-red-500"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        />
+                      </button>
                       
                       {/* Available Badge */}
                       {firstVariant?.availableForSale === false && (
